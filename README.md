@@ -22,3 +22,10 @@ It's important that we add a special key to our standard SST experience
         },
     },
 ```
+
+## What is this project
+
+This project imagines a back office that has the following features
+1 - it's run entirely on your own infrastructure
+2 - it supports normal back office functions
+3 - it encrouages the back office to think in terms of automation, rather than one off tasks
