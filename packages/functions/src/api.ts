@@ -1,8 +1,17 @@
 import { Resource } from "sst";
-import { Handler } from "aws-lambda";
-import { Example } from "@monorepo-template/core/example";
+import {
+  BedrockClient,
+  ListFoundationModelsCommand,
+} from "@aws-sdk/client-bedrock";
 
-export const handler: Handler = async (_event) => {
+import { Handler } from "aws-lambda";
+import { Example } from "@autonomous-ai/core/example";
+
+export const handler: Handler = async (event) => {
+  console.log("event: ", event);
+  if (event.httpMethod !== "GET") {
+  }
+
   return {
     statusCode: 200,
     body: `${Example.hello()} Linked to ${Resource.MyBucket.name}.`,
