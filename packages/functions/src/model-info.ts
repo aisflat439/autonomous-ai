@@ -1,6 +1,6 @@
-import { Resource } from "sst";
 import {
   BedrockClient,
+  FoundationModelLifecycleStatus,
   ListFoundationModelsCommand,
 } from "@aws-sdk/client-bedrock";
 
@@ -17,15 +17,21 @@ export const handler: Handler = async (event) => {
     console.error("Error fetching foundation models: ", error);
   }
 
-  const simplified = response!.modelSummaries?.map((m) => ({
-    name: m.modelName,
-    modelId: m.modelId,
-    description: `${
-      m.providerName
-    } model supporting: ${m.outputModalities?.join(", ")}${
-      m.responseStreamingSupported ? " (streaming)" : ""
-    }`,
-  }));
+  const simplified = response!.modelSummaries
+    ?.filter(
+      (m) => m.modelLifecycle?.status !== FoundationModelLifecycleStatus.LEGACY
+    )
+    .map((m) => ({
+      name: m.modelName,
+      modelId: m.modelId,
+      inputModalities: m.inputModalities,
+      outputModalities: m.outputModalities,
+      description: `${
+        m.providerName
+      } model supporting: ${m.outputModalities?.join(", ")}${
+        m.responseStreamingSupported ? " (streaming)" : ""
+      }`,
+    }));
 
   return {
     statusCode: 200,

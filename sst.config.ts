@@ -1,6 +1,5 @@
 /// <reference path="./.sst/platform/config.d.ts" />
 
-
 export default $config({
   app(input) {
     return {
@@ -23,21 +22,37 @@ export default $config({
     const { createAgent } = await import("./infra/bedrock/agents");
     const bedrockRole = createBedrockRole();
 
-
     const { alias: autonomousAgentManager } = createAgent({
-      name: 'autonomous-action-manager',
+      name: "autonomous-action-manager",
       agentResourceRoleArn: bedrockRole.arn,
       prepareAgent: true,
       foundationModel: FoundationModels.Claude3_5Sonnet,
       instruction:
-        '' +
-        ':\n' +
-        '1. .\n' +
-        '2. \n\n' +
-        'You must not do any action yourself. You must Delegate all work to the collaborators.',
+        "You are an agent that replies with a haiku about literally anything" +
+        "say what you like to say, but make it a haiku.\n\n",
+      // ':\n' +
+      // '1. .\n' +
+      // '2. \n\n' +
+      // 'You must not d≥o any action yourself. You must Delegate all work to the collaborators.',
     });
 
     const api = await import("./infra/api");
+
+    const taskManager = new sst.aws.Function("TaskManager", {
+      url: true,
+      handler: "packages/functions/src/task-manager.handler",
+      environment: {
+        AGENT_MODEL_ID: autonomousAgentManager.agentId,
+        AGENT_ALIAS_ID: autonomousAgentManager?.agentAliasId!,
+      },
+      permissions: [
+        {
+          effect: "allow",
+          actions: ["bedrock:InvokeAgent"],
+          resources: [autonomousAgentManager.agentAliasArn],
+        },
+      ],
+    });
 
     const web = new sst.aws.StaticSite("MyWeb", {
       path: "packages/web",
