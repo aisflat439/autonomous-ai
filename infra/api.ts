@@ -1,7 +1,13 @@
 import { bucket } from "./storage";
 
 export const myApi = new sst.aws.Function("MyApi", {
-  url: true,
+  url: {
+    cors: {
+      allowOrigins: ["http://localhost:5173"],
+      allowMethods: ["*"],
+      allowHeaders: ["*"],
+    },
+  },
   link: [bucket],
   handler: "packages/functions/src/api.handler",
 });

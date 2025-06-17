@@ -9,7 +9,7 @@ export const Route = createRootRoute({
           Home
         </Link>{" "}
         <Link to="/model-selector" className="[&.active]:font-bold">
-          Model Selector
+          Model Selectors
         </Link>
       </div>
       <hr />

@@ -57,12 +57,12 @@ export default $config({
     const web = new sst.aws.StaticSite("MyWeb", {
       path: "packages/web",
       build: {
-        output: "dist",
         command: "npm run build",
+        output: "dist",
       },
       environment: {
         VITE_BEDROCK_INFO: api.modelInfo.url,
-        VITE_API_URL: "api.url",
+        VITE_API_URL: api.myApi.url,
         VITE_AUTH_URL: "auth.url",
       },
     });

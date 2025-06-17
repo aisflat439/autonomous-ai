@@ -10,7 +10,7 @@ From the project root run
 
 #### Special considerations
 
-It's important that we add a special key to our standard SST experience
+1 - It's important that we add a special key to our standard SST experience
 
 ```ts
 // in sst.config note this ensures that we have
@@ -22,6 +22,10 @@ It's important that we add a special key to our standard SST experience
         },
     },
 ```
+
+2 - Model Access
+
+If you haven't gotten access to the models you may need to request access from the aws console.
 
 ## What is this project
 
