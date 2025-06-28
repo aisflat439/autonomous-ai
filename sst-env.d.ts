@@ -5,6 +5,14 @@
 
 declare module "sst" {
   export interface Resource {
+    "KnowledgeBaseS3DataSource": {
+      "id": string
+      "type": "aws.bedrock/agentDataSource.AgentDataSource"
+    }
+    "KnowledgeBaseSyncFunction": {
+      "name": string
+      "type": "sst.aws.Function"
+    }
     "ModelInfo": {
       "name": string
       "type": "sst.aws.Function"
@@ -23,10 +31,25 @@ declare module "sst" {
       "type": "sst.aws.StaticSite"
       "url": string
     }
-    "TaskManager": {
-      "name": string
-      "type": "sst.aws.Function"
-      "url": string
+    "Rds": {
+      "clusterArn": string
+      "database": string
+      "host": string
+      "password": string
+      "port": number
+      "reader": string
+      "secretArn": string
+      "type": "sst.aws.Aurora"
+      "username": string
+    }
+    "Vpc": {
+      "bastion": string
+      "type": "sst.aws.Vpc"
+    }
+    "knowledgeBase": {
+      "arn": string
+      "id": string
+      "type": "aws.bedrock/agentKnowledgeBase.AgentKnowledgeBase"
     }
   }
 }

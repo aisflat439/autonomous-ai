@@ -27,7 +27,6 @@ app.get("/upload", async (c) => {
     Key: uuidv7(),
     Bucket: Resource.MyBucket.name,
   });
-  console.log("Resource.MyBucket.name: ", Resource.MyBucket.name);
   const url = await getSignedUrl(s3, command);
 
   return c.json({ url });
