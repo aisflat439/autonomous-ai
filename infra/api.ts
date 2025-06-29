@@ -14,6 +14,12 @@ export const myApi = new sst.aws.Function("MyApi", {
   permissions: [
     {
       actions: [
+        /*
+          The only exciting or intereting bit here is that we're getting the
+          correct permissions to use the Bedrock knowledge base.
+          we need to be able to use. They make sense in 
+          plain english.
+        */
         "bedrock:RetrieveAndGenerate",
         "bedrock:Retrieve",
         "bedrock:InvokeModel",

@@ -29,7 +29,6 @@ function RouteComponent() {
 
       const data = await result.json();
       setResponses([data.message, ...responses]);
-      console.log("data.message: ", data.message);
       setStatus("idle");
     } catch (error) {
       console.error("Error fetching KB request:", error);
@@ -100,7 +99,7 @@ function RouteComponent() {
           <ul>
             {responses.map((response, index) => (
               <li key={index} className="mb-2">
-                {response}
+                <Typography>{response}</Typography>
               </li>
             ))}
           </ul>
