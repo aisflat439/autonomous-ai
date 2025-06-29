@@ -2,12 +2,10 @@ import { Resource } from "sst";
 
 import { Hono } from "hono";
 import { handle } from "hono/aws-lambda";
-import { v7 as uuidv7 } from "uuid";
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
   S3Client,
-  GetObjectCommand,
   PutObjectCommand,
   ListObjectsV2Command,
   DeleteObjectCommand,

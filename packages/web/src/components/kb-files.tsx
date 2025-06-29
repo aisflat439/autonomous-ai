@@ -1,4 +1,6 @@
 import type { File } from "../types";
+import { Button } from "./ui/button";
+import { Typography } from "./ui/typography";
 
 export const KbFiles = ({ files }: { files: File[] }) => {
   const formatTime = (date: Date) => {
@@ -23,7 +25,7 @@ export const KbFiles = ({ files }: { files: File[] }) => {
 
   return (
     <div className="w-full md:w-1/2 mb-6 md:mb-0">
-      <h2 className="text-lg font-semibold mb-2">Existing Files:</h2>
+      <Typography variant="xl/normal">Existing Files:</Typography>
       <div className="border rounded-lg p-4 h-full bg-gray-50">
         {files && files.length > 0 ? (
           <ul className="space-y-2 max-h-80 overflow-y-auto">
@@ -38,17 +40,19 @@ export const KbFiles = ({ files }: { files: File[] }) => {
                     Last Modified: {formatTime(file.lastModified)}
                   </div>
                 </div>
-                <button
+                <Button
+                  variant="destructive"
                   onClick={() => handleDelete(file.name)}
-                  className="ml-3 px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                 >
                   Delete
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500">No files found in the knowledge base.</p>
+          <Typography variant="md/thin">
+            No files found in the knowledge base.
+          </Typography>
         )}
       </div>
     </div>

@@ -1,6 +1,10 @@
 import React from "react";
 import { KbFiles } from "../components/kb-files";
 import type { File } from "../types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Typography } from "@/components/ui/typography";
 
 export const Route = createFileRoute({
   component: RouteComponent,
@@ -91,15 +95,12 @@ function RouteComponent() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-      <h1 className="text-2xl font-bold mb-6 text-blue-700">
+      <Typography variant="4xl/normal" color="secondary" as="h1">
         Add to knowledge base
-      </h1>
-      <button
-        onClick={handleCallKbRequestEndpoint}
-        className="mb-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
+      </Typography>
+      <Button onClick={handleCallKbRequestEndpoint}>
         Call KB Request Endpoint
-      </button>
+      </Button>
 
       <div className="flex flex-col md:flex-row md:space-x-6">
         {/* Left side - File list */}
@@ -111,29 +112,20 @@ function RouteComponent() {
           <div className="border rounded-lg p-4">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Label className="block text-sm font-medium text-gray-700 mb-2">
                   Select file to upload:
-                </label>
-                <input
+                </Label>
+                <Input
                   name="file"
                   type="file"
                   accept="image/png, image/jpeg, application/pdf, text/plain, text/markdown"
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-md file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-blue-50 file:text-blue-700
-                    hover:file:bg-blue-100"
                   required
                 />
               </div>
 
-              <button
-                type="submit"
-                className={`w-full py-2 px-4 rounded-md text-white font-medium ${"bg-blue-600 hover:bg-blue-700"}`}
-              >
+              <Button variant="secondary" type="submit">
                 Upload to KB
-              </button>
+              </Button>
             </form>
           </div>
         </div>
