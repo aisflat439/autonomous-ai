@@ -1,9 +1,11 @@
 import React from "react";
+import { KbFiles } from "../components/kb-files";
+import type { File } from "../types";
 
 export const Route = createFileRoute({
   component: RouteComponent,
   loader: async () => {
-    let files: { files: string[] } | null = null;
+    let files: { files: File[] } | null = null;
     const filesRes = await fetch(import.meta.env.VITE_API_URL + "kb-files", {
       method: "get",
       headers: {
@@ -16,24 +18,21 @@ export const Route = createFileRoute({
       console.error("Failed to fetch latest file:", filesRes.statusText);
     }
 
-    const uploadRes = await fetch(import.meta.env.VITE_API_URL + "upload", {
+    return { files: files!.files };
+  },
+});
+
+function RouteComponent() {
+  const { files } = Route.useLoaderData();
+
+  const handleCallKbRequestEndpoint = async () => {
+    await fetch(import.meta.env.VITE_API_URL + "kb-request", {
       method: "get",
       headers: {
         "Content-Type": "application/json",
       },
     });
-    if (uploadRes.ok) {
-      const data = await uploadRes.json();
-      return { url: data.url, files: files!.files };
-    } else {
-      console.error("Failed to fetch API data:", uploadRes.statusText);
-    }
-    return { url: "", files: [] };
-  },
-});
-
-function RouteComponent() {
-  const { url, files } = Route.useLoaderData();
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,8 +43,27 @@ function RouteComponent() {
     ) as HTMLInputElement;
     const file = fileInput.files?.[0];
 
-    if (!file || !url) {
-      console.error("No file selected or upload URL unavailable");
+    if (!file) {
+      console.error("No file selected");
+      return;
+    }
+
+    const uploadRes = await fetch(
+      import.meta.env.VITE_API_URL +
+        "upload?filename=" +
+        encodeURIComponent(file.name),
+      {
+        method: "get",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const { url } = await uploadRes.json();
+
+    if (!url) {
+      console.error("No upload URL unavailable");
       return;
     }
 
@@ -76,27 +94,16 @@ function RouteComponent() {
       <h1 className="text-2xl font-bold mb-6 text-blue-700">
         Add to knowledge base
       </h1>
+      <button
+        onClick={handleCallKbRequestEndpoint}
+        className="mb-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        Call KB Request Endpoint
+      </button>
 
       <div className="flex flex-col md:flex-row md:space-x-6">
         {/* Left side - File list */}
-        <div className="w-full md:w-1/2 mb-6 md:mb-0">
-          <h2 className="text-lg font-semibold mb-2">Existing Files:</h2>
-          <div className="border rounded-lg p-4 h-full bg-gray-50">
-            {files && files.length > 0 ? (
-              <ul className="list-disc pl-5 space-y-1 max-h-80 overflow-y-auto">
-                {files.map((file) => (
-                  <li key={file} className="text-gray-700">
-                    {file}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-500">
-                No files found in the knowledge base.
-              </p>
-            )}
-          </div>
-        </div>
+        <KbFiles files={files} />
 
         {/* Right side - Upload form */}
         <div className="w-full md:w-1/2">
@@ -123,22 +130,11 @@ function RouteComponent() {
 
               <button
                 type="submit"
-                disabled={!url}
-                className={`w-full py-2 px-4 rounded-md text-white font-medium ${
-                  !url
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
-                }`}
+                className={`w-full py-2 px-4 rounded-md text-white font-medium ${"bg-blue-600 hover:bg-blue-700"}`}
               >
                 Upload to KB
               </button>
             </form>
-
-            {!url && (
-              <div className="mt-4 p-2 bg-yellow-100 text-yellow-700 rounded text-sm">
-                Upload URL not available. Please try refreshing the page.
-              </div>
-            )}
           </div>
         </div>
       </div>

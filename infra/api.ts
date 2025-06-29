@@ -1,3 +1,4 @@
+import { knowledgeBase } from "./bedrock/knowledge-base";
 import { bucket } from "./storage";
 
 export const myApi = new sst.aws.Function("MyApi", {
@@ -8,8 +9,18 @@ export const myApi = new sst.aws.Function("MyApi", {
       allowHeaders: ["*"],
     },
   },
-  link: [bucket],
+  link: [bucket, knowledgeBase],
   handler: "packages/functions/src/api.handler",
+  permissions: [
+    {
+      actions: [
+        "bedrock:RetrieveAndGenerate",
+        "bedrock:Retrieve",
+        "bedrock:InvokeModel",
+      ],
+      resources: ["*"],
+    },
+  ],
 });
 
 export const modelInfo = new sst.aws.Function("ModelInfo", {

@@ -1,6 +1,10 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./../../.sst/platform/config.d.ts" />
 
+import { rds } from "../rds";
+import { bucket } from "../storage";
+import { knowledgeBaseRole } from "./iam";
+
 export function createKnowledgeBase(
   bedrockRole: aws.iam.Role,
   rds: sst.aws.Aurora,
@@ -55,3 +59,9 @@ export function createKnowledgeBase(
 
   return { knowledgeBase, s3DataSource };
 }
+
+export const { knowledgeBase, s3DataSource } = createKnowledgeBase(
+  knowledgeBaseRole,
+  rds,
+  bucket
+);

@@ -90,3 +90,16 @@ This project imagines a back office that has the following features
 1 - it's run entirely on your own infrastructure
 2 - it supports normal back office functions
 3 - it encrouages the back office to think in terms of automation, rather than one off tasks
+
+## Knowledge base
+
+Here we're imagining that we have customer service person who works for us. Perhaps they're a friend or coworker. This feature is designed for us to allow uploading markdown files that we can then ask questions to to get the correct response.
+
+### Special considerations
+
+Wiring up a KB is actually more involved than you might think, it's kinda annoying! We need a few bits of infra
+1 - a vector store (we using RDS in this example but opensearch is an alternative here)
+2 - bucket to load these kbs into
+3 - a notifier to tell bedrock to process these
+4 - we need a handler function for that
+5 - permissions so the API know that it's allowed to speak to the KB

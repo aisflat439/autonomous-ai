@@ -47,37 +47,29 @@ export default $config({
     });
 
     const storage = await import("./infra/storage");
-    const vpc = new sst.aws.Vpc("Vpc", {
-      nat: "ec2",
-      bastion: true, // so you can connect to RDS and setup the table
-    });
-
-    const rds = new sst.aws.Aurora("Rds", {
-      dataApi: true, // required for Bedrock KnowledgeBase to access RDS
-      engine: "postgres",
-      vpc: vpc,
-      scaling: {
-        min: "0.5 ACU",
-      },
-    });
+    const { rds } = await import("./infra/rds");
 
     const { FoundationModels } = await import("./infra/bedrock/models");
-    const { createBedrockRole, createKnowledgeBaseRole } = await import(
+    const { bedrockRole, knowledgeBaseRole } = await import(
       "./infra/bedrock/iam"
     );
     const { createAgent } = await import("./infra/bedrock/agents");
+    const { knowledgeBase, s3DataSource } = await import(
+      "./infra/bedrock/knowledge-base"
+    );
+    // const { createKnowledgeBase } = await import
     const { createKnowledgeBase } = await import(
       "./infra/bedrock/knowledge-base"
     );
-    const bedrockRole = createBedrockRole();
+    // const bedrockRole = createBedrockRole();
 
-    const knowledgeBaseRole = createKnowledgeBaseRole(storage.bucket, rds);
+    // const knowledgeBaseRole = createKnowledgeBaseRole(storage.bucket, rds);
 
-    const { knowledgeBase, s3DataSource } = createKnowledgeBase(
-      knowledgeBaseRole,
-      rds,
-      storage.bucket
-    );
+    // const { knowledgeBase, s3DataSource } = createKnowledgeBase(
+    //   knowledgeBaseRole,
+    //   rds,
+    //   storage.bucket
+    // );
 
     // const { alias: autonomousAgentManager } = createAgent({
     //   name: "autonomous-action-manager",
@@ -142,7 +134,7 @@ export default $config({
         {
           name: "SyncTrigger",
           function: syncFunction.arn,
-          events: ["s3:ObjectCreated:*"],
+          events: ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"],
         },
       ],
     });

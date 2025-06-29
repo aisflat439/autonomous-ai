@@ -1,6 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./../../.sst/platform/config.d.ts" />
 
+import { bucket } from "../storage";
+import { rds } from "../rds";
+
 export const createBedrockRole = (): aws.iam.Role => {
   const role = new aws.iam.Role("bedrock-role", {
     assumeRolePolicy: JSON.stringify({
@@ -103,3 +106,6 @@ export const createKnowledgeBaseRole = (
 
   return role;
 };
+
+export const bedrockRole = createBedrockRole();
+export const knowledgeBaseRole = createKnowledgeBaseRole(bucket, rds);
