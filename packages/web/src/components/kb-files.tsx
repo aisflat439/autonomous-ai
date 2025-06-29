@@ -2,7 +2,13 @@ import type { File } from "../types";
 import { Button } from "./ui/button";
 import { Typography } from "./ui/typography";
 
-export const KbFiles = ({ files }: { files: File[] }) => {
+export const KbFiles = ({
+  files,
+  onDelete,
+}: {
+  files: File[];
+  onDelete: (fileName: string) => void;
+}) => {
   const formatTime = (date: Date) => {
     return new Date(date).toLocaleString("en-US", {
       year: "numeric",
@@ -10,16 +16,6 @@ export const KbFiles = ({ files }: { files: File[] }) => {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    });
-  };
-
-  const handleDelete = (fileName: string) => {
-    fetch(import.meta.env.VITE_API_URL + "delete-file", {
-      method: "put",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ fileName }),
     });
   };
 
@@ -42,7 +38,7 @@ export const KbFiles = ({ files }: { files: File[] }) => {
                 </div>
                 <Button
                   variant="destructive"
-                  onClick={() => handleDelete(file.name)}
+                  onClick={() => onDelete(file.name)}
                 >
                   Delete
                 </Button>

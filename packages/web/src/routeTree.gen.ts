@@ -12,11 +12,17 @@ import type { CreateFileRoute, FileRoutesByPath } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ModelSelectorRouteImport } from './routes/model-selector'
+import { Route as KnowledgeBaseRouteImport } from './routes/knowledge-base'
 import { Route as IndexRouteImport } from './routes/index'
 
 const ModelSelectorRoute = ModelSelectorRouteImport.update({
   id: '/model-selector',
   path: '/model-selector',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KnowledgeBaseRoute = KnowledgeBaseRouteImport.update({
+  id: '/knowledge-base',
+  path: '/knowledge-base',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -27,27 +33,31 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/knowledge-base': typeof KnowledgeBaseRoute
   '/model-selector': typeof ModelSelectorRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/knowledge-base': typeof KnowledgeBaseRoute
   '/model-selector': typeof ModelSelectorRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/knowledge-base': typeof KnowledgeBaseRoute
   '/model-selector': typeof ModelSelectorRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/model-selector'
+  fullPaths: '/' | '/knowledge-base' | '/model-selector'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/model-selector'
-  id: '__root__' | '/' | '/model-selector'
+  to: '/' | '/knowledge-base' | '/model-selector'
+  id: '__root__' | '/' | '/knowledge-base' | '/model-selector'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  KnowledgeBaseRoute: typeof KnowledgeBaseRoute
   ModelSelectorRoute: typeof ModelSelectorRoute
 }
 
@@ -58,6 +68,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/knowledge-base': {
+      id: '/knowledge-base'
+      path: '/knowledge-base'
+      fullPath: '/knowledge-base'
+      preLoaderRoute: typeof KnowledgeBaseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/model-selector': {
@@ -79,6 +96,15 @@ declare module './routes/index' {
     FileRoutesByPath['/']['fullPath']
   >
 }
+declare module './routes/knowledge-base' {
+  const createFileRoute: CreateFileRoute<
+    '/knowledge-base',
+    FileRoutesByPath['/knowledge-base']['parentRoute'],
+    FileRoutesByPath['/knowledge-base']['id'],
+    FileRoutesByPath['/knowledge-base']['path'],
+    FileRoutesByPath['/knowledge-base']['fullPath']
+  >
+}
 declare module './routes/model-selector' {
   const createFileRoute: CreateFileRoute<
     '/model-selector',
@@ -91,6 +117,7 @@ declare module './routes/model-selector' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  KnowledgeBaseRoute: KnowledgeBaseRoute,
   ModelSelectorRoute: ModelSelectorRoute,
 }
 export const routeTree = rootRouteImport

@@ -62,11 +62,15 @@ app.get("/kb-files", async (c) => {
   return c.json({ files: files });
 });
 
-app.get("/kb-request", async (c) => {
+app.put("/kb-request", async (c) => {
+  const requestBody = await c.req.json();
+  if (!requestBody || !requestBody.text) {
+    return c.json({ error: "Request body must contain 'text' field" }, 400);
+  }
   const response = await client.send(
     new RetrieveAndGenerateCommand({
       input: {
-        text: "What should I do if the pizza gets cold?",
+        text: requestBody.text,
       },
       retrieveAndGenerateConfiguration: {
         type: "KNOWLEDGE_BASE",
@@ -81,11 +85,14 @@ app.get("/kb-request", async (c) => {
 
   console.log(response.output?.text); // Natural language response!
 
-  return c.json({ message: "kb-request endpoint is under construction." });
+  return c.json({
+    message:
+      response.output?.text || "The request happened but there was an issue.",
+  });
 });
 
-app.put("/delete-file", async (c) => {
-  const { fileName } = await c.req.json();
+app.delete("/kb-files/:fileName", async (c) => {
+  const fileName = c.req.param("fileName");
 
   if (!fileName) {
     return c.json({ error: "File name is required" }, 400);
