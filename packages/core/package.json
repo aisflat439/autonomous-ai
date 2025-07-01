@@ -12,6 +12,8 @@
     ]
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.840.0",
+    "electrodb": "^3.4.3",
     "sst": "*"
   },
   "devDependencies": {
