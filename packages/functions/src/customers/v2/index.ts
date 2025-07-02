@@ -1,4 +1,12 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
+import {
+  createNewCustomer,
+  getNewCustomer,
+  listNewCustomers,
+  updateNewCustomer,
+  deleteNewCustomer,
+  NewCustomerItem,
+} from "@autonomous-ai/core/new-customers";
 
 const NewCustomerItemSchema = z.object({
   customerId: z.string().openapi({ example: "cust_123" }),
@@ -49,6 +57,14 @@ const getCustomers = createRoute({
         },
       },
       description: "List of customers",
+    },
+    500: {
+      content: {
+        "application/json": {
+          schema: ErrorSchema,
+        },
+      },
+      description: "Internal server error",
     },
   },
 });
@@ -175,86 +191,62 @@ const deleteCustomer = createRoute({
 
 const v2CustomersApp = new OpenAPIHono();
 
-const customers = new Map([
-  [
-    "cust_1",
-    {
-      customerId: "cust_1",
-      name: "John Doe",
-      email: "john@example.com",
-      createdAt: "2024-01-01T00:00:00.000Z",
-      updatedAt: "2024-01-01T00:00:00.000Z",
-    },
-  ],
-  [
-    "cust_2",
-    {
-      customerId: "cust_2",
-      name: "Jane Smith",
-      email: "jane@example.com",
-      createdAt: "2024-01-02T00:00:00.000Z",
-      updatedAt: "2024-01-02T00:00:00.000Z",
-    },
-  ],
-]);
-
-v2CustomersApp.openapi(getCustomers, (c) => {
-  return c.json(Array.from(customers.values()));
+v2CustomersApp.openapi(getCustomers, async (c) => {
+  try {
+    const result = await listNewCustomers();
+    return c.json(result.data, 200);
+  } catch (error) {
+    return c.json({ error: "Failed to fetch customers" }, 500);
+  }
 });
 
-v2CustomersApp.openapi(getCustomer, (c) => {
+v2CustomersApp.openapi(getCustomer, async (c) => {
   const { customerId } = c.req.valid("param");
-  const customer = customers.get(customerId);
 
-  if (!customer) {
+  try {
+    const result = await getNewCustomer(customerId);
+    if (!result.data) {
+      return c.json({ error: "Customer not found" }, 404);
+    }
+    return c.json(result.data, 200);
+  } catch (error) {
     return c.json({ error: "Customer not found" }, 404);
   }
-
-  return c.json(customer, 200);
 });
 
-v2CustomersApp.openapi(createCustomer, (c) => {
+v2CustomersApp.openapi(createCustomer, async (c) => {
   const { customerId, name, email } = c.req.valid("json");
-  const now = new Date().toISOString();
-  const customer = {
-    customerId,
-    name,
-    email,
-    createdAt: now,
-    updatedAt: now,
-  };
 
-  customers.set(customerId, customer);
-  return c.json(customer, 201);
+  try {
+    const result = await createNewCustomer({ customerId, name, email });
+    return c.json(result.data, 201);
+  } catch (error) {
+    return c.json({ error: "Failed to create customer" }, 400);
+  }
 });
 
-v2CustomersApp.openapi(updateCustomer, (c) => {
+v2CustomersApp.openapi(updateCustomer, async (c) => {
   const { customerId } = c.req.valid("param");
   const updates = c.req.valid("json");
-  const customer = customers.get(customerId);
 
-  if (!customer) {
+  try {
+    const result = await updateNewCustomer(customerId, updates);
+
+    return c.json(result.data as NewCustomerItem, 200);
+  } catch (error) {
     return c.json({ error: "Customer not found" }, 404);
   }
-
-  const updatedCustomer = {
-    ...customer,
-    ...updates,
-    updatedAt: new Date().toISOString(),
-  };
-  customers.set(customerId, updatedCustomer);
-  return c.json(updatedCustomer, 200);
 });
 
-v2CustomersApp.openapi(deleteCustomer, (c) => {
+v2CustomersApp.openapi(deleteCustomer, async (c) => {
   const { customerId } = c.req.valid("param");
 
-  if (!customers.has(customerId)) {
+  try {
+    await deleteNewCustomer(customerId);
+    return c.body(null, 204);
+  } catch (error) {
     return c.json({ error: "Customer not found" }, 404);
   }
-
-  customers.delete(customerId);
-  return c.body(null, 204);
 });
 
 export { v2CustomersApp };
