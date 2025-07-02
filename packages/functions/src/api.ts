@@ -1,6 +1,8 @@
 import { Resource } from "sst";
 
-import { Hono } from "hono";
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { swaggerUI } from "@hono/swagger-ui";
+
 import { handle } from "hono/aws-lambda";
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -14,12 +16,16 @@ import {
   BedrockAgentRuntimeClient,
   RetrieveAndGenerateCommand,
 } from "@aws-sdk/client-bedrock-agent-runtime";
+import { v1CustomersApp } from "./customers/v1";
+import { v2CustomersApp } from "./customers/v2";
 
 const client = new BedrockAgentRuntimeClient({ region: "us-east-1" });
 
 const s3 = new S3Client();
 
-const app = new Hono();
+const app = new OpenAPIHono();
+app.route("/v1", v1CustomersApp);
+app.route("/v2", v2CustomersApp);
 
 app.get("/", async (c) => {
   return c.text(
@@ -107,5 +113,16 @@ app.delete("/kb-files/:fileName", async (c) => {
 
   return c.json({ message: "File deleted successfully." });
 });
+
+// OpenAPI documentation
+app.doc("/doc", {
+  openapi: "3.0.0",
+  info: {
+    version: "1.0.0",
+    title: "Customer API",
+    description: "API for managing customers with versioned endpoints",
+  },
+});
+app.get("/ui", swaggerUI({ url: "/doc" }));
 
 export const handler = handle(app);
