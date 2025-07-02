@@ -13,6 +13,7 @@ import type { CreateFileRoute, FileRoutesByPath } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ModelSelectorRouteImport } from './routes/model-selector'
 import { Route as KnowledgeBaseRouteImport } from './routes/knowledge-base'
+import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as IndexRouteImport } from './routes/index'
 
 const ModelSelectorRoute = ModelSelectorRouteImport.update({
@@ -25,6 +26,11 @@ const KnowledgeBaseRoute = KnowledgeBaseRouteImport.update({
   path: '/knowledge-base',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CustomersRoute = CustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -33,30 +39,34 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/customers': typeof CustomersRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
   '/model-selector': typeof ModelSelectorRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/customers': typeof CustomersRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
   '/model-selector': typeof ModelSelectorRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/customers': typeof CustomersRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
   '/model-selector': typeof ModelSelectorRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/knowledge-base' | '/model-selector'
+  fullPaths: '/' | '/customers' | '/knowledge-base' | '/model-selector'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/knowledge-base' | '/model-selector'
-  id: '__root__' | '/' | '/knowledge-base' | '/model-selector'
+  to: '/' | '/customers' | '/knowledge-base' | '/model-selector'
+  id: '__root__' | '/' | '/customers' | '/knowledge-base' | '/model-selector'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CustomersRoute: typeof CustomersRoute
   KnowledgeBaseRoute: typeof KnowledgeBaseRoute
   ModelSelectorRoute: typeof ModelSelectorRoute
 }
@@ -68,6 +78,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customers': {
+      id: '/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof CustomersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/knowledge-base': {
@@ -96,6 +113,15 @@ declare module './routes/index' {
     FileRoutesByPath['/']['fullPath']
   >
 }
+declare module './routes/customers' {
+  const createFileRoute: CreateFileRoute<
+    '/customers',
+    FileRoutesByPath['/customers']['parentRoute'],
+    FileRoutesByPath['/customers']['id'],
+    FileRoutesByPath['/customers']['path'],
+    FileRoutesByPath['/customers']['fullPath']
+  >
+}
 declare module './routes/knowledge-base' {
   const createFileRoute: CreateFileRoute<
     '/knowledge-base',
@@ -117,6 +143,7 @@ declare module './routes/model-selector' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CustomersRoute: CustomersRoute,
   KnowledgeBaseRoute: KnowledgeBaseRoute,
   ModelSelectorRoute: ModelSelectorRoute,
 }
