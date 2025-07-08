@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { CustomerList } from "@/components/customer-list";
 import { CustomerForm } from "@/components/customer-form";
 import type {
   OldCustomer,
@@ -47,12 +46,15 @@ function CustomersPage() {
   };
 
   const loadOldCustomers = async () => {
-    const response = await fetch(import.meta.env.VITE_API_URL + "customers", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      import.meta.env.VITE_API_URL + "v1/customers",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (response.ok) {
       const customers = await response.json();
@@ -70,7 +72,7 @@ function CustomersPage() {
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     if (response.ok) {
@@ -82,11 +84,11 @@ function CustomersPage() {
   };
 
   const handleCreateCustomer = async (
-    customerData: CreateOldCustomer | CreateNewCustomer,
+    customerData: CreateOldCustomer | CreateNewCustomer
   ) => {
     setIsLoadingForm(true);
     try {
-      const endpoint = activeTab === "v1" ? "customers" : "v2/customers";
+      const endpoint = activeTab === "v1" ? "v1/customers" : "v2/customers";
       const response = await fetch(import.meta.env.VITE_API_URL + endpoint, {
         method: "POST",
         headers: {
@@ -114,7 +116,7 @@ function CustomersPage() {
   };
 
   const handleUpdateCustomer = async (
-    customerData: CreateOldCustomer | CreateNewCustomer,
+    customerData: CreateOldCustomer | CreateNewCustomer
   ) => {
     if (!editingCustomer) return;
 
@@ -122,7 +124,7 @@ function CustomersPage() {
     try {
       const endpoint =
         activeTab === "v1"
-          ? `customers/${editingCustomer.customerId}`
+          ? `v1/customers/${editingCustomer.customerId}`
           : `v2/customers/${editingCustomer.customerId}`;
 
       const response = await fetch(import.meta.env.VITE_API_URL + endpoint, {
@@ -141,14 +143,14 @@ function CustomersPage() {
         if (activeTab === "v1") {
           setOldCustomers((prev) =>
             prev.map((c) =>
-              c.customerId === editingCustomer.customerId ? updatedCustomer : c,
-            ),
+              c.customerId === editingCustomer.customerId ? updatedCustomer : c
+            )
           );
         } else {
           setNewCustomers((prev) =>
             prev.map((c) =>
-              c.customerId === editingCustomer.customerId ? updatedCustomer : c,
-            ),
+              c.customerId === editingCustomer.customerId ? updatedCustomer : c
+            )
           );
         }
         setEditingCustomer(null);
@@ -170,7 +172,7 @@ function CustomersPage() {
     try {
       const endpoint =
         activeTab === "v1"
-          ? `customers/${customerId}`
+          ? `v1/customers/${customerId}`
           : `v2/customers/${customerId}`;
 
       const response = await fetch(import.meta.env.VITE_API_URL + endpoint, {
@@ -183,11 +185,11 @@ function CustomersPage() {
       if (response.ok) {
         if (activeTab === "v1") {
           setOldCustomers((prev) =>
-            prev.filter((c) => c.customerId !== customerId),
+            prev.filter((c) => c.customerId !== customerId)
           );
         } else {
           setNewCustomers((prev) =>
-            prev.filter((c) => c.customerId !== customerId),
+            prev.filter((c) => c.customerId !== customerId)
           );
         }
         // Clear editing state if we're deleting the customer being edited
@@ -211,7 +213,7 @@ function CustomersPage() {
   };
 
   const handleSubmit = (
-    customerData: CreateOldCustomer | CreateNewCustomer,
+    customerData: CreateOldCustomer | CreateNewCustomer
   ) => {
     if (editingCustomer) {
       handleUpdateCustomer(customerData);
@@ -312,7 +314,7 @@ function CustomersPage() {
                               day: "numeric",
                               hour: "2-digit",
                               minute: "2-digit",
-                            },
+                            }
                           )}
                         </div>
                       )}

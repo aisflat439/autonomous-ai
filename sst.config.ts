@@ -57,7 +57,6 @@ export default $config({
     const { knowledgeBase, s3DataSource } = await import(
       "./infra/bedrock/knowledge-base"
     );
-    // const { createKnowledgeBase } = await import
     const { createKnowledgeBase } = await import(
       "./infra/bedrock/knowledge-base"
     );

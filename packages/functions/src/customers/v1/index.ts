@@ -192,10 +192,12 @@ const deleteCustomer = createRoute({
 const v1CustomersApp = new OpenAPIHono();
 
 v1CustomersApp.openapi(getCustomers, async (c) => {
+  console.log("Fetching v1 customers...");
   try {
     const result = await listOldCustomers();
     return c.json(result.data, 200);
   } catch (error) {
+    console.log("error, Failed to fetch customers: ", error);
     return c.json({ error: "Failed to fetch customers" }, 500);
   }
 });

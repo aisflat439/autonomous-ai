@@ -1,5 +1,7 @@
 import { knowledgeBase } from "./bedrock/knowledge-base";
 import { bucket } from "./storage";
+import { oldCustomers } from "./db/old-customers";
+import { newCustomers } from "./db/new-customers";
 
 export const myApi = new sst.aws.Function("MyApi", {
   url: {
@@ -9,7 +11,7 @@ export const myApi = new sst.aws.Function("MyApi", {
       allowHeaders: ["*"],
     },
   },
-  link: [bucket, knowledgeBase],
+  link: [bucket, knowledgeBase, oldCustomers, newCustomers],
   handler: "packages/functions/src/api.handler",
   permissions: [
     {

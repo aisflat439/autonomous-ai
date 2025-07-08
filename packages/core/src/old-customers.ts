@@ -7,6 +7,7 @@ import {
   EntityIdentifiers,
 } from "electrodb";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { Resource } from "sst";
 
 const client = new DynamoDBClient({});
 
@@ -66,7 +67,7 @@ export const OldCustomer = new Entity(
       },
     },
   },
-  { client, table: "OldCustomersTable" },
+  { client, table: Resource.OldCustomers.name }
 );
 
 export async function createOldCustomer(data: {
@@ -87,7 +88,7 @@ export async function listOldCustomers() {
 
 export async function updateOldCustomer(
   customerId: string,
-  updates: Partial<{ name: string; email: string }>,
+  updates: Partial<{ name: string; email: string }>
 ) {
   return await OldCustomer.update({ customerId }).set(updates).go();
 }

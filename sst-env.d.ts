@@ -31,6 +31,14 @@ declare module "sst" {
       "type": "sst.aws.StaticSite"
       "url": string
     }
+    "NewCustomers": {
+      "name": string
+      "type": "sst.aws.Dynamo"
+    }
+    "OldCustomers": {
+      "name": string
+      "type": "sst.aws.Dynamo"
+    }
     "Rds": {
       "clusterArn": string
       "database": string
