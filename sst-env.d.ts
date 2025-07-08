@@ -54,6 +54,10 @@ declare module "sst" {
       "bastion": string
       "type": "sst.aws.Vpc"
     }
+    "contact-us-agent": {
+      "agentId": string
+      "type": "aws.bedrock/agentAgent.AgentAgent"
+    }
     "knowledgeBase": {
       "arn": string
       "id": string

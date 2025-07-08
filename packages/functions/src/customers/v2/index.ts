@@ -217,6 +217,7 @@ v2CustomersApp.openapi(getCustomer, async (c) => {
 });
 
 v2CustomersApp.openapi(createCustomer, async (c) => {
+  console.log("c: ", c);
   const { customerId, name, email } = c.req.valid("json");
 
   try {

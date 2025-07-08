@@ -46,6 +46,24 @@ export default $config({
       };
     });
 
+    sst.Linkable.wrap(aws.bedrock.AgentAgent, (agent) => ({
+      properties: { agentId: agent.agentId },
+    }));
+
+    sst.Linkable.wrap(aws.bedrock.AgentAgentAlias, (alias) => ({
+      properties: {
+        agentId: alias.agentId,
+        agentAliasId: alias.agentAliasId,
+        agentAliasArn: alias.agentAliasArn,
+      },
+      include: [
+        sst.aws.permission({
+          actions: ["bedrock-agent:InvokeAgent"],
+          resources: [alias.agentAliasArn],
+        }),
+      ],
+    }));
+
     const storage = await import("./infra/storage");
     const { rds } = await import("./infra/rds");
 
@@ -60,6 +78,31 @@ export default $config({
     const { createKnowledgeBase } = await import(
       "./infra/bedrock/knowledge-base"
     );
+
+    const { alias: contactUsAgent } = createAgent({
+      name: "contact-us-agent",
+      agentResourceRoleArn: bedrockRole.arn,
+      prepareAgent: true,
+      foundationModel: FoundationModels.Claude3_5Sonnet,
+      instruction: `
+        You are a helpful customer support agent. You have access to our knowledge base.
+        When customers contact you you should
+        1 - Be friendly and professional
+        2 - Use the knowledge base to answer their questions
+        3 - When you check the knowledge base, and you don't know the answer, you should not reply. Instead you should call the create ticket function
+        4  Keep your replies short and to the point, but helpful!
+        
+        You can help with questions about our products, services, and policies here.
+      `,
+      knowledgeBases: [
+        {
+          knowledgeBaseId: knowledgeBase.id,
+          description: "Knowledge Base for Contact Us Agent",
+          knowledgeBaseState: "ENABLED",
+        },
+      ],
+    });
+
     // const bedrockRole = createBedrockRole();
 
     // const knowledgeBaseRole = createKnowledgeBaseRole(storage.bucket, rds);

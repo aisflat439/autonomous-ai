@@ -2,14 +2,21 @@
 /// <reference path="./../../.sst/platform/config.d.ts" />
 
 import { type FoundationModelName } from "./models";
+type KnowledgeBaseState = "ENABLED" | "DISABLED";
+type AgentCollaboration = "SUPERVISOR" | "COLLABORATOR";
 
 export const createAgent = (params: {
   name: string;
   foundationModel: FoundationModelName;
   instruction: string;
   agentResourceRoleArn: $util.Output<string>;
-  agentCollaboration?: "SUPERVISOR" | "COLLABORATOR";
+  agentCollaboration?: AgentCollaboration;
   prepareAgent?: boolean;
+  knowledgeBases?: {
+    knowledgeBaseId: $util.Output<string>;
+    description: string;
+    knowledgeBaseState?: KnowledgeBaseState;
+  }[];
   collaborators?: {
     name: string;
     instruction: string;
@@ -28,6 +35,33 @@ export const createAgent = (params: {
     instruction: params.instruction,
     agentCollaboration: params.agentCollaboration,
     prepareAgent: params.prepareAgent,
+  });
+
+  /*
+    Sometimes we'll have knowledge bases that we want to attach to the agent.
+    when we want to do that we'll pass in the knowledgeBases parameter.
+    each of those will then get added to the agent.
+  */
+  params.knowledgeBases.forEach((kb, index) => {
+    new aws.bedrock.AgentAgentKnowledgeBaseAssociation(
+      `${params.name}-knowledge-base-${index}`,
+      {
+        agentId: agent.agentId,
+        /*
+          Notice that we're creating the agent as DRAFT
+          we can version agents just like we can
+          with an API. So we'll use DRAFT
+          as we build out our process
+          eventually we can hit
+          V1 and call it
+          good.
+        */
+        agentVersion: "DRAFT",
+        knowledgeBaseId: kb.knowledgeBaseId,
+        description: kb.description || `Knowledge Base for ${params.name}`,
+        knowledgeBaseState: kb.knowledgeBaseState || "ENABLED",
+      }
+    );
   });
 
   params.collaborators?.forEach((collaborator) => {

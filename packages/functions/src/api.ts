@@ -14,6 +14,7 @@ import {
 } from "@aws-sdk/client-s3";
 import {
   BedrockAgentRuntimeClient,
+  InvokeAgentCommand,
   RetrieveAndGenerateCommand,
 } from "@aws-sdk/client-bedrock-agent-runtime";
 import { v1CustomersApp } from "./customers/v1";
@@ -114,7 +115,27 @@ app.delete("/kb-files/:fileName", async (c) => {
   return c.json({ message: "File deleted successfully." });
 });
 
-// OpenAPI documentation
+app.post("/contact-us", async (c) => {
+  const body = await c.req.json();
+  if (!body || !body.message) {
+    return c.json({ error: "Message is required" }, 400);
+  }
+
+  try {
+  } catch (error) {
+    const command = new InvokeAgentCommand({
+      // TODO wire up linked agent
+      // agentId: etcx...
+    });
+
+    const response = await client.send(command);
+
+    return c.json({
+      message: response.completion?.text || "Thank you for your message!",
+    });
+  }
+});
+
 app.doc("/doc", {
   openapi: "3.0.0",
   info: {
