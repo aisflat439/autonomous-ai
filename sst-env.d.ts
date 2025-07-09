@@ -58,6 +58,12 @@ declare module "sst" {
       "agentId": string
       "type": "aws.bedrock/agentAgent.AgentAgent"
     }
+    "contact-us-agent-alias": {
+      "agentAliasArn": string
+      "agentAliasId": string
+      "agentId": string
+      "type": "aws.bedrock/agentAgentAlias.AgentAgentAlias"
+    }
     "knowledgeBase": {
       "arn": string
       "id": string

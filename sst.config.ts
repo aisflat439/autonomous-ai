@@ -3,7 +3,7 @@
 export default $config({
   app(input) {
     return {
-      name: "autonomous-ai",
+      name: "autonomous-ai-sst",
       removal: input?.stage === "production" ? "retain" : "remove",
       protect: ["production"].includes(input?.stage),
       home: "aws",
@@ -56,12 +56,6 @@ export default $config({
         agentAliasId: alias.agentAliasId,
         agentAliasArn: alias.agentAliasArn,
       },
-      include: [
-        sst.aws.permission({
-          actions: ["bedrock-agent:InvokeAgent"],
-          resources: [alias.agentAliasArn],
-        }),
-      ],
     }));
 
     const storage = await import("./infra/storage");
@@ -78,6 +72,8 @@ export default $config({
     const { createKnowledgeBase } = await import(
       "./infra/bedrock/knowledge-base"
     );
+    const { oldCustomers } = await import("./infra/db/old-customers");
+    const { newCustomers } = await import("./infra/db/new-customers");
 
     const { alias: contactUsAgent } = createAgent({
       name: "contact-us-agent",
@@ -90,8 +86,8 @@ export default $config({
         1 - Be friendly and professional
         2 - Use the knowledge base to answer their questions
         3 - When you check the knowledge base, and you don't know the answer, you should not reply. Instead you should call the create ticket function
-        4  Keep your replies short and to the point, but helpful!
-        
+        4 - Keep your replies short and to the point, but helpful!
+
         You can help with questions about our products, services, and policies here.
       `,
       knowledgeBases: [
@@ -127,7 +123,41 @@ export default $config({
     //   // 'You must not d≥o any action yourself. You must Delegate all work to the collaborators.',
     // });
 
-    const api = await import("./infra/api");
+    const { modelInfo } = await import("./infra/api");
+    const myApi = new sst.aws.Function("MyApi", {
+      url: {
+        cors: {
+          allowOrigins: ["http://localhost:5173"],
+          allowMethods: ["*"],
+          allowHeaders: ["*"],
+        },
+      },
+      link: [
+        storage.bucket,
+        knowledgeBase,
+        oldCustomers,
+        newCustomers,
+        contactUsAgent,
+      ],
+      handler: "packages/functions/src/api.handler",
+      permissions: [
+        {
+          actions: [
+            /*
+              The only exciting or intereting bit here is that we're getting the
+              correct permissions to use the Bedrock knowledge base.
+              we need to be able to use. They make sense in
+              plain english.
+            */
+            "bedrock:RetrieveAndGenerate",
+            "bedrock:Retrieve",
+            "bedrock:InvokeModel",
+            "bedrock:InvokeAgent",
+          ],
+          resources: ["*"],
+        },
+      ],
+    });
 
     // const taskManager = new sst.aws.Function("TaskManager", {
     //   url: true,
@@ -152,8 +182,8 @@ export default $config({
         output: "dist",
       },
       environment: {
-        VITE_BEDROCK_INFO: api.modelInfo.url,
-        VITE_API_URL: api.myApi.url,
+        VITE_BEDROCK_INFO: modelInfo.url,
+        VITE_API_URL: myApi.url,
         VITE_AUTH_URL: "auth.url",
       },
     });
@@ -188,6 +218,7 @@ export default $config({
       rdsPort: rds.port,
       rdsUsername: rds.username,
       rdsDatabase: rds.database,
+      apiDocs: myApi.url,
     };
   },
 });

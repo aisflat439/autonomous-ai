@@ -87,7 +87,7 @@ export const createAgent = (params: {
       see documentation here
       https://www.pulumi.com/registry/packages/aws/api-docs/bedrock/agentagentalias/
     */
-    alias = new aws.bedrock.AgentAgentAlias(params.name, {
+    alias = new aws.bedrock.AgentAgentAlias(`${params.name}-alias`, {
       agentAliasName: `${$app.stage}-${params.name}-alias`,
       agentId: agent.agentId,
       description: params.name,

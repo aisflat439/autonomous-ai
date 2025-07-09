@@ -14,6 +14,7 @@ export const handler = async () => {
     });
 
     const response = await client.send(command);
+    console.log("response: ", response);
 
     return { statusCode: 200, body: "Sync initiated" };
   } catch (error) {

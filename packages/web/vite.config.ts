@@ -7,15 +7,12 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    // @ts-expect-error - incorrect vite version installed, TODO: fix this
     tanstackRouter({
       target: "react",
       autoCodeSplitting: true,
       verboseFileRoutes: false,
     }),
-    // @ts-expect-error - incorrect vite version installed, TODO: fix this
     react(),
-    // @ts-expect-error - incorrect vite version installed, TODO: fix this
     tailwindcss(),
   ],
   resolve: {

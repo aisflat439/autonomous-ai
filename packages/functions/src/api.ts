@@ -115,25 +115,76 @@ app.delete("/kb-files/:fileName", async (c) => {
   return c.json({ message: "File deleted successfully." });
 });
 
+/*
+  Here we get contacted by customers. By default our normal process
+  would be to create a ticket. The ticket would be the request
+  from the customer and manual responses would come from 
+  support. 
+
+  KB can help here by reviewing the request that comes in 
+  and, if the answer is in the knowledge base, it will 
+  reply with answer so the ticket never gets created.
+
+  Supervisor Agent comes next. Here we can really use our imagination.
+  As we understand what customers are asking we can create 
+  tools that we can give access to for our agents.
+
+  Example:
+  - Customer asks about why friends company has better pricing?
+  - Agent checks V1 customers and sees that customer is not
+    in v1 customers. therefore they have new pricing
+
+  if neither thing works
+  - Agent creates ticket in the database
+*/
 app.post("/contact-us", async (c) => {
   const body = await c.req.json();
   if (!body || !body.message) {
     return c.json({ error: "Message is required" }, 400);
   }
 
+  console.log(
+    "Available contact-us-agent-alias properties:",
+    Resource["contact-us-agent-alias"]
+  );
+
   try {
-  } catch (error) {
     const command = new InvokeAgentCommand({
-      // TODO wire up linked agent
-      // agentId: etcx...
+      agentId: Resource["contact-us-agent-alias"].agentId,
+      agentAliasId: Resource["contact-us-agent-alias"].agentAliasId,
+      sessionId: "session-" + Date.now(),
+      inputText: body.message,
+      enableTrace: false,
     });
 
     const response = await client.send(command);
+    console.log("response: ", response);
 
-    return c.json({
-      message: response.completion?.text || "Thank you for your message!",
-    });
+    let finalText = "";
+    if (response.completion) {
+      for await (const chunk of response.completion) {
+        if (chunk.chunk) {
+          const bytes = chunk.chunk.bytes;
+          if (bytes) {
+            const text = new TextDecoder().decode(bytes);
+            finalText += text;
+          }
+        }
+      }
+    }
+
+    console.log("Agent response: ", finalText); // Log the final response text
+  } catch (error) {
+    console.log("error: ", error);
+    //   // if (response !== "not in KB")
+    //   // return c.json({
+    //   //   message: "response.completion?.text" || "Thank you for your message!",
+    //   // });
+    //   // create ticket in the database
   }
+  return c.json({
+    message: "Thank you for your message! We will get back to you soon.",
+  });
 });
 
 app.doc("/doc", {

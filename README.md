@@ -54,6 +54,8 @@ SST tunnel is a thing, but it kinda sucks. If you can't get it running, just man
 - **Database password**: Get from AWS Secrets Manager → your RDS secret → "Retrieve secret value"
 - **Database name**: `autonomous_ai` (or from your SST output)
 
+NOTE: lots of times these steps aren't really clear. I don't undersatnd why this doesn't work well.
+
 ### Run SQL Commands
 
 Execute these commands one by one in the query editor:
