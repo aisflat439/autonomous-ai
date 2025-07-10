@@ -54,20 +54,24 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Function"
     }
+    "Tickets": {
+      "name": string
+      "type": "sst.aws.Dynamo"
+    }
     "Vpc": {
       "bastion": string
       "type": "sst.aws.Vpc"
+    }
+    "agent-for-ticket-creation-v1-Pulumi": {
+      "agentId": string
+      "type": "aws.bedrock/agentAgent.AgentAgent"
     }
     "knowledgeBase": {
       "arn": string
       "id": string
       "type": "aws.bedrock/agentKnowledgeBase.AgentKnowledgeBase"
     }
-    "ticket-calling-example-agent-1752184954481-1752184954481": {
-      "agentId": string
-      "type": "aws.bedrock/agentAgent.AgentAgent"
-    }
-    "ticket-calling-example-agent-1752184954481-alias": {
+    "ticket-agent-alias": {
       "agentAliasArn": string
       "agentAliasId": string
       "agentId": string

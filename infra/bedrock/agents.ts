@@ -28,7 +28,7 @@ export const createAgent = (params: {
     see documentation here
     https://www.pulumi.com/registry/packages/aws/api-docs/bedrock/agentagent/
    */
-  const uniqueLogicalName = `${params.name}-${Date.now()}`;
+  const uniqueLogicalName = params.name + "-Pulumi";
 
   const agent = new aws.bedrock.AgentAgent(uniqueLogicalName, {
     agentName: `${$app.stage}-${params.name}`,

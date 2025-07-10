@@ -8,7 +8,9 @@
   "exports": {
     "./old-customers": "./src/old-customers.ts",
     "./new-customers": "./src/new-customers.ts",
-    "./dynamo": "./src/dynamo.ts"
+    "./dynamo": "./src/dynamo.ts",
+    "./tickets": "./src/tickets.ts",
+    "./example": "./src/example/index.ts"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.840.0",

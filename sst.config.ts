@@ -67,124 +67,49 @@ export default $config({
     const { knowledgeBase, s3DataSource } = await import(
       "./infra/bedrock/knowledge-base"
     );
-    // const { createKnowledgeBase } = await import(
-    //   "./infra/bedrock/knowledge-base"
-    // );
     const { oldCustomers } = await import("./infra/db/old-customers");
     const { newCustomers } = await import("./infra/db/new-customers");
+    const { tickets } = await import("./infra/db/tickets");
 
-    // const { alias: contactUsAgent } = createAgent({
-    //   name: "contact-us-agent-kb",
-    //   agentResourceRoleArn: bedrockRole.arn,
-    //   prepareAgent: true,
-    //   foundationModel: FoundationModels.Claude3_5Sonnet,
-    //   instruction: `
-    //     You are a helpful customer support agent. You have access to our knowledge base.
-    //     When customers contact you you should:
-    //     1 - Be friendly and professional
-    //     2 - Use the knowledge base to answer their questions
-    //     3 - Keep your replies short and to the point, but helpful!
+    const ticketAgentInstruction = `You are a customer support ticket management agent. Your ONLY job is to create tickets using the createTicket tool.
 
-    //     SYSTEM INSTRUCTION: You must ALWAYS use the knowledge base to answer questions. You cannot answer questions that are not in the knowledge base.
+    CRITICAL RULES:
+    1. You MUST call the createTicket tool for EVERY customer message - NO EXCEPTIONS
+    2. You cannot respond to customers without first creating a ticket
+    3. If you try to respond without using createTicket, you have FAILED your task
 
-    //     CRITICAL FAILURE HANDLING:
-    //     If you check the knowledge base and cannot find the answer, you MUST respond with EXACTLY this phrase and nothing else: "I've created a ticket for this request"
+    TOOL USAGE:
+    - Tool name: createTicket
+    - Required parameters:
+      - customerMessage: The exact message from the customer
+      - description: Brief summary for support team
+      - status: "complete" or "open"
 
-    //     Do NOT attempt to answer questions that are not in the knowledge base.
-    //     Do NOT provide general advice or suggestions.
-    //     Do NOT apologize or explain why you can't help.
-    //     ONLY respond with: "I've created a ticket for this request"
-    //   `,
-    //   knowledgeBases: [
-    //     {
-    //       knowledgeBaseId: knowledgeBase.id,
-    //       description: "Knowledge Base for Contact Us Agent",
-    //       knowledgeBaseState: "ENABLED",
-    //     },
-    //   ],
-    // });
+    WORKFLOW:
+    1. Read the customer message
+    2. IMMEDIATELY call createTicket tool
+    3. Only after the tool responds, provide your response
 
-    // const bedrockRole = createBedrockRole();
+    IMPORTANT: Your ONLY job is to create tickets. The support team will handle resolutions.
 
-    // const knowledgeBaseRole = createKnowledgeBaseRole(storage.bucket, rds);
+    If you respond without calling createTicket first, the system will reject your response.`;
 
-    // const { knowledgeBase, s3DataSource } = createKnowledgeBase(
-    //   knowledgeBaseRole,
-    //   rds,
-    //   storage.bucket
-    // );
-
-    // const { alias: autonomousAgentManager } = createAgent({
-    //   name: "autonomous-action-manager",
-    //   agentResourceRoleArn: bedrockRole.arn,
-    //   prepareAgent: true,
-    //   foundationModel: FoundationModels.Claude3_5Sonnet,
-    //   instruction:
-    //     "You are an agent that replies with a haiku about literally anything" +
-    //     "say what you like to say, but make it a haiku.\n\n",
-    //   // ':\n' +
-    //   // '1. .\n' +
-    //   // '2. \n\n' +
-    //   // 'You must not d≥o any action yourself. You must Delegate all work to the collaborators.',
-    // });
-
-    const ticketAgentInstruction = `You are a customer support ticket management agent. Your primary role is to analyze customer requests and create appropriate tickets in the database.
-
-    CORE RESPONSIBILITIES:
-    1. Analyze every customer message to understand their need
-    2. Determine if the request can be immediately resolved or needs follow-up
-    3. Create a ticket using the createTicket tool with appropriate status
-
-    TICKET CREATION RULES:
-    - ALWAYS create a ticket for every customer request
-    - Set status to "complete" if you can provide a full solution in your response
-    - Set status to "open" if the request needs human follow-up or you cannot fully resolve it
-    - Be concise but capture the essence of the request in the ticket description
-
-    STATUS DECISION CRITERIA:
-    Mark as "complete" when:
-    - You provide a direct answer to a question
-    - You give clear instructions that fully resolve the issue
-    - The request is informational and you've provided the information
-
-    Mark as "open" when:
-    - The request needs human intervention
-    - You need more information to fully resolve it
-    - The issue is complex or technical beyond your knowledge
-    - The customer is reporting a bug or system issue
-    - Any request involving refunds, account changes, or sensitive data
-
-    IMPORTANT: You must ALWAYS call the createTicket tool before responding to the customer. Never skip ticket creation.
-
-    RESPONSE FORMAT:
-    1. First, create the ticket (always)
-    2. Then, provide a helpful response to the customer
-    3. If status is "open", let them know their request has been logged and someone will follow up`;
-
-    const { agent: ticketAgent, alias: ticketAgentAlias } = createAgent({
-      name: `ticket-calling-example-agent-${Date.now()}`,
+    const { agent: ticketAgent } = createAgent({
+      name: `agent-for-ticket-creation-v1`,
       description: "A simple tool agent for creating support tickets",
       agentResourceRoleArn: bedrockRole.arn,
-      prepareAgent: true,
+      prepareAgent: false,
       foundationModel: FoundationModels.Claude3_Haiku,
       instruction: ticketAgentInstruction,
       knowledgeBases: [],
       collaborators: [],
     });
-    // const agent = new aws.bedrock.AgentAgent("tool-calling-agent", {
-    //   agentName: `${$app.stage}-tool-calling-agent`,
-    //   agentResourceRoleArn: bedrockRole.arn,
-    //   idleSessionTtlInSeconds: 500,
-    //   foundationModel: FoundationModels.Claude3_Haiku,
-    //   instruction: ticketAgentInstruction,
-    //   prepareAgent: true,
-    //   description: "a simple tool agent for creating support tickets",
-    // });
 
     const ticketCreation = new sst.aws.Function("TicketCreationFunction", {
       handler: "packages/functions/src/ticket-creation.handler",
       runtime: "nodejs20.x",
       timeout: "5 minutes",
+      link: [tickets],
       permissions: [
         {
           actions: ["bedrock:StartIngestionJob"],
@@ -193,52 +118,70 @@ export default $config({
       ],
     });
 
-    // const ticketActionGroup = new aws.bedrock.AgentAgentActionGroup(
-    //   "TicketActionGroup",
-    //   {
-    //     actionGroupName: "ticket-tools",
-    //     agentId: simpleToolAgent.agentId,
-    //     agentVersion: "DRAFT",
-    //     skipResourceInUseCheck: true,
-    //     actionGroupExecutor: {
-    //       lambda: ticketCreation.arn,
-    //     },
-    //     functionSchema: {
-    //       memberFunctions: {
-    //         functions: [
-    //           {
-    //             name: "createTicket",
-    //             description:
-    //               "Creates a support ticket in the database with the customer's request",
-    //             parameters: [
-    //               {
-    //                 mapBlockKey: "customerMessage",
-    //                 type: "string",
-    //                 description:
-    //                   "The original message or request from the customer",
-    //                 required: true,
-    //               },
-    //               {
-    //                 mapBlockKey: "description",
-    //                 type: "string",
-    //                 description:
-    //                   "A brief summary of the issue or request for the support team",
-    //                 required: true,
-    //               },
-    //               {
-    //                 mapBlockKey: "status",
-    //                 type: "string",
-    //                 description:
-    //                   "Ticket status - either 'complete' if resolved or 'open' if needs follow-up",
-    //                 required: true,
-    //               },
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //     },
-    //   }
-    // );
+    // Allow Bedrock to invoke the ticket creation function
+    new aws.lambda.Permission("BedrockInvokeTicketCreation", {
+      function: ticketCreation.name,
+      principal: "bedrock.amazonaws.com",
+      action: "lambda:InvokeFunction",
+      sourceArn: ticketAgent.agentArn,
+    });
+
+    const ticketActionGroup = new aws.bedrock.AgentAgentActionGroup(
+      "TicketActionGroup",
+      {
+        actionGroupName: "ticket-tools-for-agent",
+        agentId: ticketAgent.agentId,
+        agentVersion: "DRAFT",
+        skipResourceInUseCheck: true,
+        actionGroupExecutor: {
+          lambda: ticketCreation.arn,
+        },
+        functionSchema: {
+          memberFunctions: {
+            functions: [
+              {
+                name: "createTicket",
+                description:
+                  "Creates a support ticket in the database with the customer's request",
+                parameters: [
+                  {
+                    mapBlockKey: "customerMessage",
+                    type: "string",
+                    description:
+                      "The original message or request from the customer",
+                    required: true,
+                  },
+                  {
+                    mapBlockKey: "description",
+                    type: "string",
+                    description:
+                      "A brief summary of the issue or request for the support team",
+                    required: true,
+                  },
+                  {
+                    mapBlockKey: "status",
+                    type: "string",
+                    description:
+                      "Ticket status - either 'complete' if resolved or 'open' if needs follow-up",
+                    required: true,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    );
+
+    const ticketAgentAlias = new aws.bedrock.AgentAgentAlias(
+      "ticket-agent-alias",
+      {
+        agentAliasName: `${$app.stage}-ticket-agent-alias`,
+        agentId: ticketAgent.agentId,
+        description: "Ticket agent alias",
+      },
+      { dependsOn: [ticketActionGroup] },
+    );
 
     const { modelInfo } = await import("./infra/api");
     const myApi = new sst.aws.Function("MyApi", {

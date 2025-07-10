@@ -30,7 +30,7 @@ app.route("/v2", v2CustomersApp);
 
 app.get("/", async (c) => {
   return c.text(
-    "Welcome to the Autonomous AI API! Use /latest to get the latest file from S3."
+    "Welcome to the Autonomous AI API! Use /latest to get the latest file from S3.",
   );
 });
 
@@ -54,7 +54,7 @@ app.get("/kb-files", async (c) => {
   const objects = await s3.send(
     new ListObjectsV2Command({
       Bucket: Resource.MyBucket.name,
-    })
+    }),
   );
 
   if (!objects.Contents) {
@@ -87,7 +87,7 @@ app.put("/kb-request", async (c) => {
             "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0", // Choose your model
         },
       },
-    })
+    }),
   );
 
   console.log(response.output?.text); // Natural language response!
@@ -113,6 +113,18 @@ app.delete("/kb-files/:fileName", async (c) => {
   await s3.send(command);
 
   return c.json({ message: "File deleted successfully." });
+});
+
+app.get("/tickets", async (c) => {
+  const { listTickets } = await import("@autonomous-ai/core/tickets");
+
+  try {
+    const result = await listTickets();
+    return c.json(result.data || []);
+  } catch (error) {
+    console.error("Error fetching tickets:", error);
+    return c.json({ error: "Failed to fetch tickets" }, 500);
+  }
 });
 
 /*
@@ -167,21 +179,27 @@ app.post("/contact-us", async (c) => {
       kbResponse = null;
     }
 
-    // const response = await client.send(command);
+    const agentCommand = new InvokeAgentCommand({
+      agentId: Resource["agent-for-ticket-creation-v1-Pulumi"].agentId,
+      agentAliasId: Resource["ticket-agent-alias"].agentAliasId,
+      sessionId: `session-${Date.now()}`,
+      inputText: `Customer Message: ${body.message}\n\nKnowledge Base Response: ${kbResponse || "No answer found in knowledge base"}`,
+    });
 
-    // let finalText = "";
-    // if (response.completion) {
-    //   for await (const chunk of response.completion) {
-    //     if (chunk.chunk) {
-    //       const bytes = chunk.chunk.bytes;
-    //       if (bytes) {
-    //         const text = new TextDecoder().decode(bytes);
-    //         finalText += text;
-    //       }
-    //     }
-    //   }
-    // }
+    const agentResponse = await client.send(agentCommand);
 
+    // Handle the streaming response
+    let agentText = "";
+    if (agentResponse.completion) {
+      for await (const chunk of agentResponse.completion) {
+        if (chunk.chunk?.bytes) {
+          const text = new TextDecoder().decode(chunk.chunk.bytes);
+          agentText += text;
+        }
+      }
+    }
+
+    console.log("agentText: ", agentText);
     // console.log("Agent response: ", finalText); // Log the final response text
   } catch (error) {
     // console.log("error: ", error);

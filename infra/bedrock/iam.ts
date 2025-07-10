@@ -25,6 +25,20 @@ export const createBedrockRole = (): aws.iam.Role => {
     policyArn: "arn:aws:iam::aws:policy/AmazonBedrockFullAccess",
   });
 
+  new aws.iam.RolePolicy("bedrock-lambda-policy", {
+    role: role.name,
+    policy: JSON.stringify({
+      Version: "2012-10-17",
+      Statement: [
+        {
+          Effect: "Allow",
+          Action: ["lambda:InvokeFunction"],
+          Resource: "*", // You could restrict this to specific function ARNs
+        },
+      ],
+    }),
+  });
+
   return role;
 };
 

@@ -17,6 +17,9 @@ export const Route = createRootRoute({
         <Link to="/model-selector" className="[&.active]:font-bold">
           Model Selectors
         </Link>
+        <Link to="/tickets" className="[&.active]:font-bold">
+          Support Tickets
+        </Link>
       </div>
       <hr />
       <div className="flex-1 p-6 w-full bg-white rounded-xl shadow-md overflow-auto">
