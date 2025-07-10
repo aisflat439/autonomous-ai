@@ -144,41 +144,47 @@ app.post("/contact-us", async (c) => {
   }
 
   try {
-    const enhancedMessage = `[SYSTEM: You MUST search the knowledge base before responding to this query]
-    
-    User Question: ${body.message}`;
-
-    const command = new InvokeAgentCommand({
-      agentId: Resource["contact-us-agent-kb-alias"].agentId,
-      agentAliasId: Resource["contact-us-agent-kb-alias"].agentAliasId,
-      sessionId: "session-" + Date.now(),
-      inputText: enhancedMessage,
-      sessionState: {
-        sessionAttributes: {
-          forceKnowledgeBase: "true",
-          instruction: "You must search the knowledge base before responding",
+    let kbResponse = null;
+    try {
+      const kbCommand = new RetrieveAndGenerateCommand({
+        input: {
+          text: body.message,
         },
-      },
-    });
+        retrieveAndGenerateConfiguration: {
+          type: "KNOWLEDGE_BASE",
+          knowledgeBaseConfiguration: {
+            knowledgeBaseId: Resource.knowledgeBase.id,
+            modelArn:
+              "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0",
+          },
+        },
+      });
 
-    const response = await client.send(command);
-
-    let finalText = "";
-    if (response.completion) {
-      for await (const chunk of response.completion) {
-        if (chunk.chunk) {
-          const bytes = chunk.chunk.bytes;
-          if (bytes) {
-            const text = new TextDecoder().decode(bytes);
-            finalText += text;
-          }
-        }
-      }
+      const kbResult = await client.send(kbCommand);
+      kbResponse = kbResult.output?.text || null;
+      console.log("KB Response:", kbResponse);
+    } catch (kbError) {
+      kbResponse = null;
     }
 
-    console.log("Agent response: ", finalText); // Log the final response text
+    // const response = await client.send(command);
+
+    // let finalText = "";
+    // if (response.completion) {
+    //   for await (const chunk of response.completion) {
+    //     if (chunk.chunk) {
+    //       const bytes = chunk.chunk.bytes;
+    //       if (bytes) {
+    //         const text = new TextDecoder().decode(bytes);
+    //         finalText += text;
+    //       }
+    //     }
+    //   }
+    // }
+
+    // console.log("Agent response: ", finalText); // Log the final response text
   } catch (error) {
-    console.log("error: ", error);
+    // console.log("error: ", error);
     //   // if (response !== "not in KB")
     //   // return c.json({
     //   //   message: "response.completion?.text" || "Thank you for your message!",

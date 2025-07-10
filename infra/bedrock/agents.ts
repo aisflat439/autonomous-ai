@@ -12,6 +12,7 @@ export const createAgent = (params: {
   agentResourceRoleArn: $util.Output<string>;
   agentCollaboration?: AgentCollaboration;
   prepareAgent?: boolean;
+  description?: string;
   knowledgeBases?: {
     knowledgeBaseId: $util.Output<string>;
     description: string;
@@ -27,7 +28,9 @@ export const createAgent = (params: {
     see documentation here
     https://www.pulumi.com/registry/packages/aws/api-docs/bedrock/agentagent/
    */
-  const agent = new aws.bedrock.AgentAgent(params.name, {
+  const uniqueLogicalName = `${params.name}-${Date.now()}`;
+
+  const agent = new aws.bedrock.AgentAgent(uniqueLogicalName, {
     agentName: `${$app.stage}-${params.name}`,
     agentResourceRoleArn: params.agentResourceRoleArn,
     idleSessionTtlInSeconds: 500,
@@ -35,34 +38,35 @@ export const createAgent = (params: {
     instruction: params.instruction,
     agentCollaboration: params.agentCollaboration,
     prepareAgent: params.prepareAgent,
+    description: params.description || `Agent for ${params.name}`,
   });
 
   /*
     Sometimes we'll have knowledge bases that we want to attach to the agent.
     when we want to do that we'll pass in the knowledgeBases parameter.
     each of those will then get added to the agent.
-  */
-  params.knowledgeBases.forEach((kb, index) => {
-    new aws.bedrock.AgentAgentKnowledgeBaseAssociation(
-      `${params.name}-knowledge-base-${index}`,
-      {
-        agentId: agent.agentId,
-        /*
-          Notice that we're creating the agent as DRAFT
-          we can version agents just like we can
-          with an API. So we'll use DRAFT
-          as we build out our process
-          eventually we can hit
-          V1 and call it
-          good.
-        */
-        agentVersion: "DRAFT",
-        knowledgeBaseId: kb.knowledgeBaseId,
-        description: kb.description || `Knowledge Base for ${params.name}`,
-        knowledgeBaseState: kb.knowledgeBaseState || "ENABLED",
-      }
-    );
-  });
+  // */
+  // params.knowledgeBases?.forEach((kb, index) => {
+  //   new aws.bedrock.AgentAgentKnowledgeBaseAssociation(
+  //     `${params.name}-knowledge-base-${index}`,
+  //     {
+  //       agentId: agent.agentId,
+  //       /*
+  //         Notice that we're creating the agent as DRAFT
+  //         we can version agents just like we can
+  //         with an API. So we'll use DRAFT
+  //         as we build out our process
+  //         eventually we can hit
+  //         V1 and call it
+  //         good.
+  //       */
+  //       agentVersion: "DRAFT",
+  //       knowledgeBaseId: kb.knowledgeBaseId,
+  //       description: kb.description || `Knowledge Base for ${params.name}`,
+  //       knowledgeBaseState: kb.knowledgeBaseState || "ENABLED",
+  //     }
+  //   );
+  // });
 
   params.collaborators?.forEach((collaborator) => {
     /*

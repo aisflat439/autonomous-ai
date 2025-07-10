@@ -5,6 +5,10 @@
 
 declare module "sst" {
   export interface Resource {
+    "KnowledgeBaseS3DataSource": {
+      "id": string
+      "type": "aws.bedrock/agentDataSource.AgentDataSource"
+    }
     "KnowledgeBaseSyncFunction": {
       "name": string
       "type": "sst.aws.Function"
@@ -46,9 +50,28 @@ declare module "sst" {
       "type": "sst.aws.Aurora"
       "username": string
     }
+    "TicketCreationFunction": {
+      "name": string
+      "type": "sst.aws.Function"
+    }
     "Vpc": {
       "bastion": string
       "type": "sst.aws.Vpc"
+    }
+    "knowledgeBase": {
+      "arn": string
+      "id": string
+      "type": "aws.bedrock/agentKnowledgeBase.AgentKnowledgeBase"
+    }
+    "ticket-calling-example-agent-1752184954481-1752184954481": {
+      "agentId": string
+      "type": "aws.bedrock/agentAgent.AgentAgent"
+    }
+    "ticket-calling-example-agent-1752184954481-alias": {
+      "agentAliasArn": string
+      "agentAliasId": string
+      "agentId": string
+      "type": "aws.bedrock/agentAgentAlias.AgentAgentAlias"
     }
   }
 }
