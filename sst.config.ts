@@ -3,7 +3,7 @@
 export default $config({
   app(input) {
     return {
-      name: "autonomous-ai-sst",
+      name: "autonomous-ai-sst-presentation",
       removal: input?.stage === "production" ? "retain" : "remove",
       protect: ["production"].includes(input?.stage),
       home: "aws",
@@ -62,42 +62,49 @@ export default $config({
     const { rds } = await import("./infra/rds");
 
     const { FoundationModels } = await import("./infra/bedrock/models");
-    const { bedrockRole, knowledgeBaseRole } = await import(
-      "./infra/bedrock/iam"
-    );
-    const { createAgent } = await import("./infra/bedrock/agents");
+    // const { bedrockRole, knowledgeBaseRole } = await import(
+    //   "./infra/bedrock/iam"
+    // );
+    // const { createAgent } = await import("./infra/bedrock/agents");
     const { knowledgeBase, s3DataSource } = await import(
       "./infra/bedrock/knowledge-base"
     );
-    const { createKnowledgeBase } = await import(
-      "./infra/bedrock/knowledge-base"
-    );
+    // const { createKnowledgeBase } = await import(
+    //   "./infra/bedrock/knowledge-base"
+    // );
     const { oldCustomers } = await import("./infra/db/old-customers");
     const { newCustomers } = await import("./infra/db/new-customers");
 
-    const { alias: contactUsAgent } = createAgent({
-      name: "contact-us-agent",
-      agentResourceRoleArn: bedrockRole.arn,
-      prepareAgent: true,
-      foundationModel: FoundationModels.Claude3_5Sonnet,
-      instruction: `
-        You are a helpful customer support agent. You have access to our knowledge base.
-        When customers contact you you should
-        1 - Be friendly and professional
-        2 - Use the knowledge base to answer their questions
-        3 - When you check the knowledge base, and you don't know the answer, you should not reply. Instead you should call the create ticket function
-        4 - Keep your replies short and to the point, but helpful!
+    // const { alias: contactUsAgent } = createAgent({
+    //   name: "contact-us-agent-kb",
+    //   agentResourceRoleArn: bedrockRole.arn,
+    //   prepareAgent: true,
+    //   foundationModel: FoundationModels.Claude3_5Sonnet,
+    //   instruction: `
+    //     You are a helpful customer support agent. You have access to our knowledge base.
+    //     When customers contact you you should:
+    //     1 - Be friendly and professional
+    //     2 - Use the knowledge base to answer their questions
+    //     3 - Keep your replies short and to the point, but helpful!
 
-        You can help with questions about our products, services, and policies here.
-      `,
-      knowledgeBases: [
-        {
-          knowledgeBaseId: knowledgeBase.id,
-          description: "Knowledge Base for Contact Us Agent",
-          knowledgeBaseState: "ENABLED",
-        },
-      ],
-    });
+    //     SYSTEM INSTRUCTION: You must ALWAYS use the knowledge base to answer questions. You cannot answer questions that are not in the knowledge base.
+
+    //     CRITICAL FAILURE HANDLING:
+    //     If you check the knowledge base and cannot find the answer, you MUST respond with EXACTLY this phrase and nothing else: "I've created a ticket for this request"
+
+    //     Do NOT attempt to answer questions that are not in the knowledge base.
+    //     Do NOT provide general advice or suggestions.
+    //     Do NOT apologize or explain why you can't help.
+    //     ONLY respond with: "I've created a ticket for this request"
+    //   `,
+    //   knowledgeBases: [
+    //     {
+    //       knowledgeBaseId: knowledgeBase.id,
+    //       description: "Knowledge Base for Contact Us Agent",
+    //       knowledgeBaseState: "ENABLED",
+    //     },
+    //   ],
+    // });
 
     // const bedrockRole = createBedrockRole();
 
@@ -127,7 +134,7 @@ export default $config({
     const myApi = new sst.aws.Function("MyApi", {
       url: {
         cors: {
-          allowOrigins: ["http://localhost:5173"],
+          allowOrigins: ["http://localhost:5173", "http://localhost:5174"],
           allowMethods: ["*"],
           allowHeaders: ["*"],
         },
@@ -137,7 +144,7 @@ export default $config({
         knowledgeBase,
         oldCustomers,
         newCustomers,
-        contactUsAgent,
+        // contactUsAgent,
       ],
       handler: "packages/functions/src/api.handler",
       permissions: [
@@ -214,8 +221,10 @@ export default $config({
     return {
       Bucket: storage.bucket.name,
       Web: web.url,
+      Api: myApi.url,
       rdsHost: rds.host,
       rdsPort: rds.port,
+      rdsName: rds.database,
       rdsUsername: rds.username,
       rdsDatabase: rds.database,
       apiDocs: myApi.url,

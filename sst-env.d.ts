@@ -5,10 +5,6 @@
 
 declare module "sst" {
   export interface Resource {
-    "KnowledgeBaseS3DataSource": {
-      "id": string
-      "type": "aws.bedrock/agentDataSource.AgentDataSource"
-    }
     "KnowledgeBaseSyncFunction": {
       "name": string
       "type": "sst.aws.Function"
@@ -53,21 +49,6 @@ declare module "sst" {
     "Vpc": {
       "bastion": string
       "type": "sst.aws.Vpc"
-    }
-    "contact-us-agent": {
-      "agentId": string
-      "type": "aws.bedrock/agentAgent.AgentAgent"
-    }
-    "contact-us-agent-alias": {
-      "agentAliasArn": string
-      "agentAliasId": string
-      "agentId": string
-      "type": "aws.bedrock/agentAgentAlias.AgentAgentAlias"
-    }
-    "knowledgeBase": {
-      "arn": string
-      "id": string
-      "type": "aws.bedrock/agentKnowledgeBase.AgentKnowledgeBase"
     }
   }
 }

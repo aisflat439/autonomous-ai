@@ -13,7 +13,7 @@ export function createKnowledgeBase(
   const knowledgeBase = new aws.bedrock.AgentKnowledgeBase(
     "knowledgeBase",
     {
-      name: "sop-knowledge-base",
+      name: "customer-service-knowledge-base",
       roleArn: bedrockRole.arn,
       knowledgeBaseConfiguration: {
         type: "VECTOR",

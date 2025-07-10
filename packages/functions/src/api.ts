@@ -143,22 +143,25 @@ app.post("/contact-us", async (c) => {
     return c.json({ error: "Message is required" }, 400);
   }
 
-  console.log(
-    "Available contact-us-agent-alias properties:",
-    Resource["contact-us-agent-alias"]
-  );
-
   try {
+    const enhancedMessage = `[SYSTEM: You MUST search the knowledge base before responding to this query]
+    
+    User Question: ${body.message}`;
+
     const command = new InvokeAgentCommand({
-      agentId: Resource["contact-us-agent-alias"].agentId,
-      agentAliasId: Resource["contact-us-agent-alias"].agentAliasId,
+      agentId: Resource["contact-us-agent-kb-alias"].agentId,
+      agentAliasId: Resource["contact-us-agent-kb-alias"].agentAliasId,
       sessionId: "session-" + Date.now(),
-      inputText: body.message,
-      enableTrace: false,
+      inputText: enhancedMessage,
+      sessionState: {
+        sessionAttributes: {
+          forceKnowledgeBase: "true",
+          instruction: "You must search the knowledge base before responding",
+        },
+      },
     });
 
     const response = await client.send(command);
-    console.log("response: ", response);
 
     let finalText = "";
     if (response.completion) {
