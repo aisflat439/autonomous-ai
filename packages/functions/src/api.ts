@@ -30,7 +30,7 @@ app.route("/v2", v2CustomersApp);
 
 app.get("/", async (c) => {
   return c.text(
-    "Welcome to the Autonomous AI API! Use /latest to get the latest file from S3.",
+    "Welcome to the Autonomous AI API! Use /latest to get the latest file from S3."
   );
 });
 
@@ -54,7 +54,7 @@ app.get("/kb-files", async (c) => {
   const objects = await s3.send(
     new ListObjectsV2Command({
       Bucket: Resource.MyBucket.name,
-    }),
+    })
   );
 
   if (!objects.Contents) {
@@ -87,7 +87,7 @@ app.put("/kb-request", async (c) => {
             "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0", // Choose your model
         },
       },
-    }),
+    })
   );
 
   console.log(response.output?.text); // Natural language response!

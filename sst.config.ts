@@ -170,7 +170,7 @@ export default $config({
             ],
           },
         },
-      },
+      }
     );
 
     const ticketAgentAlias = new aws.bedrock.AgentAgentAlias(
@@ -180,7 +180,7 @@ export default $config({
         agentId: ticketAgent.agentId,
         description: "Ticket agent alias",
       },
-      { dependsOn: [ticketActionGroup] },
+      { dependsOn: [ticketActionGroup] }
     );
 
     const { modelInfo } = await import("./infra/api");
@@ -199,7 +199,7 @@ export default $config({
         newCustomers,
         ticketAgent,
         ticketAgentAlias,
-        // contactUsAgent,
+        tickets,
       ],
       handler: "packages/functions/src/api.handler",
       permissions: [
