@@ -91,7 +91,7 @@ CREATE INDEX ON bedrock_integration.bedrock_kb USING gin (custom_metadata);
 This project imagines a back office that has the following features
 1 - it's run entirely on your own infrastructure
 2 - it supports normal back office functions
-3 - it encrouages the back office to think in terms of automation, rather than one off tasks
+3 - it encourages the back office to think in terms of automation, rather than one off tasks
 
 ## Knowledge base
 
@@ -105,3 +105,9 @@ Wiring up a KB is actually more involved than you might think, it's kinda annoyi
 3 - a notifier to tell bedrock to process these
 4 - we need a handler function for that
 5 - permissions so the API know that it's allowed to speak to the KB
+
+## Using that KB for automation
+
+For simplicity we'll start with the simplest version of a task that we might imagine. We have an endpoint we can hit called `/contact-us`. We can imagine, for the purposes of this that it's a page within our app where internal or external support requests might come from. It could be an endpoint that we wire to some service as well. An example might be Intercom or some other service.
+
+We know that Agents
