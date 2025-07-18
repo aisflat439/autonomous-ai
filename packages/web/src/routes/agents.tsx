@@ -1,12 +1,20 @@
 import { Typography } from "@/components/ui/typography";
 
 interface Agent {
-  id: string;
-  name: string;
-  description: string;
-  status: "active" | "inactive" | "preparing";
-  foundationModel: string;
-  lastUpdated?: string;
+  agentId: string;
+  agentName: string;
+  agentStatus:
+    | "CREATING"
+    | "PREPARING"
+    | "PREPARED"
+    | "NOT_PREPARED"
+    | "DELETING"
+    | "FAILED"
+    | "VERSIONING"
+    | "UPDATING";
+  description?: string;
+  latestAgentVersion?: string;
+  updatedAt?: string;
 }
 
 export const Route = createFileRoute({
@@ -54,33 +62,46 @@ function AgentsPage() {
         {agents.length > 0 ? (
           agents.map((agent) => (
             <div
-              key={agent.id}
+              key={agent.agentId}
               className="border rounded-lg p-6 hover:shadow-lg transition-shadow"
             >
-              <h3 className="text-lg font-semibold mb-2">{agent.name}</h3>
-              <p className="text-gray-600 mb-4">{agent.description}</p>
-              <div className="flex justify-between items-center">
-                <span
-                  className={`px-2 py-1 rounded text-sm ${
-                    agent.status === "active"
-                      ? "bg-green-100 text-green-800"
-                      : agent.status === "preparing"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {agent.status}
-                </span>
-                <span className="text-sm text-gray-500">
-                  {agent.foundationModel}
-                </span>
+              <h3 className="text-lg font-semibold mb-2">{agent.agentName}</h3>
+              <p className="text-gray-600 mb-4">
+                {agent.description || "No description available"}
+              </p>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Status:</span>
+                  <span
+                    className={`px-2 py-1 rounded text-sm ${
+                      agent.agentStatus === "PREPARED"
+                        ? "bg-green-100 text-green-800"
+                        : agent.agentStatus === "PREPARING" ||
+                            agent.agentStatus === "CREATING" ||
+                            agent.agentStatus === "UPDATING" ||
+                            agent.agentStatus === "VERSIONING"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : agent.agentStatus === "FAILED"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {agent.agentStatus}
+                  </span>
+                </div>
+                {agent.updatedAt && (
+                  <div className="text-sm text-gray-500">
+                    <span className="font-medium">Last updated:</span>{" "}
+                    {new Date(agent.updatedAt).toLocaleString()}
+                  </div>
+                )}
               </div>
             </div>
           ))
         ) : (
           <div className="col-span-full text-center py-12">
             <Typography variant="lg/normal" color="muted">
-              No agents available. The API endpoint needs to be implemented.
+              No agents found in your Bedrock account.
             </Typography>
           </div>
         )}
