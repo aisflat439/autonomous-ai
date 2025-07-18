@@ -20,6 +20,9 @@ export const Route = createRootRoute({
         <Link to="/tickets" className="[&.active]:font-bold">
           Support Tickets
         </Link>
+        <Link to="/agents" className="[&.active]:font-bold">
+          Agents
+        </Link>
       </div>
       <hr />
       <div className="flex-1 p-6 w-full bg-white rounded-xl shadow-md overflow-auto">

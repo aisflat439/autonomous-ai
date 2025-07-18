@@ -83,8 +83,11 @@ export default $config({
     - Required parameters:
       - customerMessage: The exact message from the customer
       - description: Brief summary for support team
-      - status: "complete" or "open"
+      - status: "open" | "in-progress" 
 
+    Status should be set to "in-progress" if the issue is resolved with your answer
+    Status should be set to "open" if you do not have enough information to resolve the issue
+    Status should be set to "complete" only if the customer is say
     WORKFLOW:
     1. Read the customer message
     2. IMMEDIATELY call createTicket tool
@@ -191,6 +194,9 @@ export default $config({
           allowMethods: ["*"],
           allowHeaders: ["*"],
         },
+      },
+      environment: {
+        MODEL_ARN: FoundationModels.Claude3_Haiku,
       },
       link: [
         storage.bucket,

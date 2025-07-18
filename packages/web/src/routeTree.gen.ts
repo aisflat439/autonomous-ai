@@ -15,6 +15,7 @@ import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as ModelSelectorRouteImport } from './routes/model-selector'
 import { Route as KnowledgeBaseRouteImport } from './routes/knowledge-base'
 import { Route as CustomersRouteImport } from './routes/customers'
+import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
 
 const TicketsRoute = TicketsRouteImport.update({
@@ -37,6 +38,11 @@ const CustomersRoute = CustomersRouteImport.update({
   path: '/customers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgentsRoute = AgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -45,6 +51,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRoute
   '/customers': typeof CustomersRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
   '/model-selector': typeof ModelSelectorRoute
@@ -52,6 +59,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRoute
   '/customers': typeof CustomersRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
   '/model-selector': typeof ModelSelectorRoute
@@ -60,6 +68,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRoute
   '/customers': typeof CustomersRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
   '/model-selector': typeof ModelSelectorRoute
@@ -69,15 +78,23 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/agents'
     | '/customers'
     | '/knowledge-base'
     | '/model-selector'
     | '/tickets'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/customers' | '/knowledge-base' | '/model-selector' | '/tickets'
+  to:
+    | '/'
+    | '/agents'
+    | '/customers'
+    | '/knowledge-base'
+    | '/model-selector'
+    | '/tickets'
   id:
     | '__root__'
     | '/'
+    | '/agents'
     | '/customers'
     | '/knowledge-base'
     | '/model-selector'
@@ -86,6 +103,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgentsRoute: typeof AgentsRoute
   CustomersRoute: typeof CustomersRoute
   KnowledgeBaseRoute: typeof KnowledgeBaseRoute
   ModelSelectorRoute: typeof ModelSelectorRoute
@@ -99,6 +117,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents': {
+      id: '/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AgentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/customers': {
@@ -141,6 +166,15 @@ declare module './routes/index' {
     FileRoutesByPath['/']['fullPath']
   >
 }
+declare module './routes/agents' {
+  const createFileRoute: CreateFileRoute<
+    '/agents',
+    FileRoutesByPath['/agents']['parentRoute'],
+    FileRoutesByPath['/agents']['id'],
+    FileRoutesByPath['/agents']['path'],
+    FileRoutesByPath['/agents']['fullPath']
+  >
+}
 declare module './routes/customers' {
   const createFileRoute: CreateFileRoute<
     '/customers',
@@ -180,6 +214,7 @@ declare module './routes/tickets' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgentsRoute: AgentsRoute,
   CustomersRoute: CustomersRoute,
   KnowledgeBaseRoute: KnowledgeBaseRoute,
   ModelSelectorRoute: ModelSelectorRoute,

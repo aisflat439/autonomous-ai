@@ -74,6 +74,7 @@ app.put("/kb-request", async (c) => {
   if (!requestBody || !requestBody.text) {
     return c.json({ error: "Request body must contain 'text' field" }, 400);
   }
+
   const response = await client.send(
     new RetrieveAndGenerateCommand({
       input: {
@@ -83,14 +84,11 @@ app.put("/kb-request", async (c) => {
         type: "KNOWLEDGE_BASE",
         knowledgeBaseConfiguration: {
           knowledgeBaseId: Resource.knowledgeBase.id,
-          modelArn:
-            "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0", // Choose your model
+          modelArn: `arn:aws:bedrock:us-east-1::foundation-model/${process.env.MODEL_ARN}`, // Choose your model
         },
       },
     })
   );
-
-  console.log(response.output?.text); // Natural language response!
 
   return c.json({
     message:
@@ -166,8 +164,7 @@ app.post("/contact-us", async (c) => {
           type: "KNOWLEDGE_BASE",
           knowledgeBaseConfiguration: {
             knowledgeBaseId: Resource.knowledgeBase.id,
-            modelArn:
-              "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0",
+            modelArn: `arn:aws:bedrock:us-east-1::foundation-model/${process.env.MODEL_ARN}`,
           },
         },
       });
