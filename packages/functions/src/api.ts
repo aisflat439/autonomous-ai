@@ -19,6 +19,7 @@ import {
 } from "@aws-sdk/client-bedrock-agent-runtime";
 import { v1CustomersApp } from "./customers/v1";
 import { v2CustomersApp } from "./customers/v2";
+import { agentsApp } from "./agents";
 
 const client = new BedrockAgentRuntimeClient({ region: "us-east-1" });
 
@@ -27,10 +28,11 @@ const s3 = new S3Client();
 const app = new OpenAPIHono();
 app.route("/v1", v1CustomersApp);
 app.route("/v2", v2CustomersApp);
+app.route("/", agentsApp);
 
 app.get("/", async (c) => {
   return c.text(
-    "Welcome to the Autonomous AI API! Use /latest to get the latest file from S3."
+    "Welcome to the Autonomous AI API! Use /latest to get the latest file from S3.",
   );
 });
 
@@ -54,7 +56,7 @@ app.get("/kb-files", async (c) => {
   const objects = await s3.send(
     new ListObjectsV2Command({
       Bucket: Resource.MyBucket.name,
-    })
+    }),
   );
 
   if (!objects.Contents) {
@@ -87,7 +89,7 @@ app.put("/kb-request", async (c) => {
           modelArn: `arn:aws:bedrock:us-east-1::foundation-model/${process.env.MODEL_ARN}`, // Choose your model
         },
       },
-    })
+    }),
   );
 
   return c.json({
