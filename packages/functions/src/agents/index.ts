@@ -1,17 +1,31 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
+import {
+  BedrockAgentClient,
+  ListAgentsCommand,
+} from "@aws-sdk/client-bedrock-agent";
 
-// Define the Agent schema for OpenAPI documentation
+// Define the Agent schema for OpenAPI documentation - matching Bedrock's schema
 const AgentSchema = z.object({
-  id: z.string().openapi({ example: "agent_123" }),
-  name: z.string().openapi({ example: "ticket-agent" }),
+  agentId: z.string().openapi({ example: "ABCDEFGHIJ" }),
+  agentName: z.string().openapi({ example: "production-ticket-agent" }),
+  agentStatus: z
+    .enum([
+      "CREATING",
+      "PREPARING",
+      "PREPARED",
+      "NOT_PREPARED",
+      "DELETING",
+      "FAILED",
+      "VERSIONING",
+      "UPDATING",
+    ])
+    .openapi({ example: "PREPARED" }),
   description: z
     .string()
+    .optional()
     .openapi({ example: "Customer support ticket management agent" }),
-  status: z
-    .enum(["active", "inactive", "preparing"])
-    .openapi({ example: "active" }),
-  foundationModel: z.string().openapi({ example: "anthropic.claude-3-haiku" }),
-  lastUpdated: z
+  latestAgentVersion: z.string().optional().openapi({ example: "1" }),
+  updatedAt: z
     .string()
     .datetime()
     .optional()
@@ -50,22 +64,33 @@ const listAgents = createRoute({
   },
 });
 
-// Create the agents app
 const agentsApp = new OpenAPIHono();
 
-// Implement the list agents endpoint
 agentsApp.openapi(listAgents, async (c) => {
-  console.log("Fetching agents...");
+  console.log("Fetching agents from Bedrock...");
 
   try {
-    // TODO: Implement actual agent fetching from Bedrock
-    // For now, return an empty array
-    const agents: z.infer<typeof AgentSchema>[] = [];
-    console.log("agents are here: ", agents);
+    const client = new BedrockAgentClient({ region: "us-east-1" });
+
+    const command = new ListAgentsCommand({
+      maxResults: 100,
+    });
+
+    const response = await client.send(command);
+
+    const agents: z.infer<typeof AgentSchema>[] =
+      response.agentSummaries?.map((agent) => ({
+        agentId: agent.agentId!,
+        agentName: agent.agentName!,
+        agentStatus: agent.agentStatus!,
+        description: agent.description,
+        latestAgentVersion: agent.latestAgentVersion,
+        updatedAt: agent.updatedAt?.toISOString(),
+      })) || [];
 
     return c.json({ agents }, 200);
   } catch (error) {
-    console.error("Error fetching agents:", error);
+    console.error("Error fetching agents from Bedrock:", error);
     return c.json({ error: "Failed to fetch agents" }, 500);
   }
 });
