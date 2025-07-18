@@ -17,6 +17,8 @@ import { Route as KnowledgeBaseRouteImport } from './routes/knowledge-base'
 import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgentsIndexRouteImport } from './routes/agents.index'
+import { Route as AgentsAgentIdRouteImport } from './routes/agents.$agentId'
 
 const TicketsRoute = TicketsRouteImport.update({
   id: '/tickets',
@@ -48,31 +50,46 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgentsIndexRoute = AgentsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AgentsRoute,
+} as any)
+const AgentsAgentIdRoute = AgentsAgentIdRouteImport.update({
+  id: '/$agentId',
+  path: '/$agentId',
+  getParentRoute: () => AgentsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/agents': typeof AgentsRoute
+  '/agents': typeof AgentsRouteWithChildren
   '/customers': typeof CustomersRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
   '/model-selector': typeof ModelSelectorRoute
   '/tickets': typeof TicketsRoute
+  '/agents/$agentId': typeof AgentsAgentIdRoute
+  '/agents/': typeof AgentsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/agents': typeof AgentsRoute
   '/customers': typeof CustomersRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
   '/model-selector': typeof ModelSelectorRoute
   '/tickets': typeof TicketsRoute
+  '/agents/$agentId': typeof AgentsAgentIdRoute
+  '/agents': typeof AgentsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/agents': typeof AgentsRoute
+  '/agents': typeof AgentsRouteWithChildren
   '/customers': typeof CustomersRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
   '/model-selector': typeof ModelSelectorRoute
   '/tickets': typeof TicketsRoute
+  '/agents/$agentId': typeof AgentsAgentIdRoute
+  '/agents/': typeof AgentsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -83,14 +100,17 @@ export interface FileRouteTypes {
     | '/knowledge-base'
     | '/model-selector'
     | '/tickets'
+    | '/agents/$agentId'
+    | '/agents/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/agents'
     | '/customers'
     | '/knowledge-base'
     | '/model-selector'
     | '/tickets'
+    | '/agents/$agentId'
+    | '/agents'
   id:
     | '__root__'
     | '/'
@@ -99,11 +119,13 @@ export interface FileRouteTypes {
     | '/knowledge-base'
     | '/model-selector'
     | '/tickets'
+    | '/agents/$agentId'
+    | '/agents/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AgentsRoute: typeof AgentsRoute
+  AgentsRoute: typeof AgentsRouteWithChildren
   CustomersRoute: typeof CustomersRoute
   KnowledgeBaseRoute: typeof KnowledgeBaseRoute
   ModelSelectorRoute: typeof ModelSelectorRoute
@@ -153,6 +175,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/tickets'
       preLoaderRoute: typeof TicketsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/agents/$agentId': {
+      id: '/agents/$agentId'
+      path: '/$agentId'
+      fullPath: '/agents/$agentId'
+      preLoaderRoute: typeof AgentsAgentIdRouteImport
+      parentRoute: typeof AgentsRoute
+    }
+    '/agents/': {
+      id: '/agents/'
+      path: '/'
+      fullPath: '/agents/'
+      preLoaderRoute: typeof AgentsIndexRouteImport
+      parentRoute: typeof AgentsRoute
     }
   }
 }
@@ -211,10 +247,41 @@ declare module './routes/tickets' {
     FileRoutesByPath['/tickets']['fullPath']
   >
 }
+declare module './routes/agents.$agentId' {
+  const createFileRoute: CreateFileRoute<
+    '/agents/$agentId',
+    FileRoutesByPath['/agents/$agentId']['parentRoute'],
+    FileRoutesByPath['/agents/$agentId']['id'],
+    FileRoutesByPath['/agents/$agentId']['path'],
+    FileRoutesByPath['/agents/$agentId']['fullPath']
+  >
+}
+declare module './routes/agents.index' {
+  const createFileRoute: CreateFileRoute<
+    '/agents/',
+    FileRoutesByPath['/agents/']['parentRoute'],
+    FileRoutesByPath['/agents/']['id'],
+    FileRoutesByPath['/agents/']['path'],
+    FileRoutesByPath['/agents/']['fullPath']
+  >
+}
+
+interface AgentsRouteChildren {
+  AgentsAgentIdRoute: typeof AgentsAgentIdRoute
+  AgentsIndexRoute: typeof AgentsIndexRoute
+}
+
+const AgentsRouteChildren: AgentsRouteChildren = {
+  AgentsAgentIdRoute: AgentsAgentIdRoute,
+  AgentsIndexRoute: AgentsIndexRoute,
+}
+
+const AgentsRouteWithChildren =
+  AgentsRoute._addFileChildren(AgentsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AgentsRoute: AgentsRoute,
+  AgentsRoute: AgentsRouteWithChildren,
   CustomersRoute: CustomersRoute,
   KnowledgeBaseRoute: KnowledgeBaseRoute,
   ModelSelectorRoute: ModelSelectorRoute,

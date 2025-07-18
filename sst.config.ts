@@ -222,6 +222,7 @@ export default $config({
             "bedrock:InvokeModel",
             "bedrock:InvokeAgent",
             "bedrock:ListAgents",
+            "bedrock:GetAgent",
           ],
           resources: ["*"],
         },
