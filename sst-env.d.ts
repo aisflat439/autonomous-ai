@@ -5,6 +5,10 @@
 
 declare module "sst" {
   export interface Resource {
+    "AgentInstructions": {
+      "name": string
+      "type": "sst.aws.Dynamo"
+    }
     "KnowledgeBaseS3DataSource": {
       "id": string
       "type": "aws.bedrock/agentDataSource.AgentDataSource"

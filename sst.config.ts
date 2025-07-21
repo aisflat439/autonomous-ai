@@ -70,6 +70,7 @@ export default $config({
     const { oldCustomers } = await import("./infra/db/old-customers");
     const { newCustomers } = await import("./infra/db/new-customers");
     const { tickets } = await import("./infra/db/tickets");
+    const { agentInstructions } = await import("./infra/db/agent-instructions");
 
     const ticketAgentInstruction = `You are a customer support ticket management agent. Your ONLY job is to create tickets using the createTicket tool.
 
@@ -206,6 +207,7 @@ export default $config({
         ticketAgent,
         ticketAgentAlias,
         tickets,
+        agentInstructions,
       ],
       handler: "packages/functions/src/api.handler",
       permissions: [
