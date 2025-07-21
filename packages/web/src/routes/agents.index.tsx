@@ -1,27 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Typography } from "@/components/ui/typography";
-
-interface Agent {
-  agentId: string;
-  agentName: string;
-  agentStatus:
-    | "CREATING"
-    | "PREPARING"
-    | "PREPARED"
-    | "NOT_PREPARED"
-    | "DELETING"
-    | "FAILED"
-    | "VERSIONING"
-    | "UPDATING";
-  description?: string;
-  latestAgentVersion?: string;
-  updatedAt?: string;
-}
+import type { AgentListItem } from "@/types/agent";
 
 export const Route = createFileRoute({
   component: AgentsListPage,
   loader: async () => {
-    let agents: Agent[] = [];
+    let agents: AgentListItem[] = [];
 
     try {
       const response = await fetch(import.meta.env.VITE_API_URL + "agents", {

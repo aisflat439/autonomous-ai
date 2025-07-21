@@ -2,52 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Typography } from "@/components/ui/typography";
 import { InstructionStatus } from "@/components/instruction-status";
 import { Card } from "@/components/ui/card";
-
-interface DetailedAgent {
-  agentId: string;
-  agentName: string;
-  agentArn: string;
-  agentStatus:
-    | "CREATING"
-    | "PREPARING"
-    | "PREPARED"
-    | "NOT_PREPARED"
-    | "DELETING"
-    | "FAILED"
-    | "VERSIONING"
-    | "UPDATING";
-  agentVersion: string;
-  agentResourceRoleArn?: string;
-  foundationModel?: string;
-  description?: string;
-  instruction?: string;
-  idleSessionTTLInSeconds?: number;
-  createdAt?: string;
-  updatedAt?: string;
-  preparedAt?: string;
-  failureReasons?: string[];
-  recommendedActions?: string[];
-  memoryConfiguration?: {
-    enabledMemoryTypes?: string[];
-    storageDays?: number;
-  };
-  promptOverrideConfiguration?: any;
-  guardrailConfiguration?: {
-    guardrailIdentifier?: string;
-    guardrailVersion?: string;
-  };
-}
-
-interface AgentInstruction {
-  agentId: string;
-  version: number;
-  instruction: string;
-  isActive: boolean;
-  updatedBy: string;
-  changeNote?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { Agent, AgentInstruction } from "@/types/agent";
 
 export const Route = createFileRoute({
   loader: async ({ params }) => {
@@ -86,7 +41,7 @@ export const Route = createFileRoute({
     }
 
     return {
-      agent: agentData.agent as DetailedAgent,
+      agent: agentData.agent as Agent,
       customInstruction: instructionData,
     };
   },
