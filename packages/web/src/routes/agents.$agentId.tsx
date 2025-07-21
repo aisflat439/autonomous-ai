@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Typography } from "@/components/ui/typography";
 import { InstructionStatus } from "@/components/instruction-status";
-import { Card } from "@/components/ui/card";
 import { BasicInformation } from "@/components/BasicInformation";
 import { TechnicalDetails } from "@/components/TechnicalDetails";
 import { Timestamps } from "@/components/Timestamps";
@@ -26,7 +25,7 @@ export const Route = createFileRoute({
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       ).catch(() => null), // Don't fail if instruction fetch fails
     ]);
 
@@ -154,34 +153,6 @@ function AgentDetailPage() {
 
           {/* Guardrail Configuration */}
           <GuardrailConfiguration agent={agent} />
-
-          {/* Failure Information */}
-          {agent.failureReasons && agent.failureReasons.length > 0 && (
-            <Card title="Failure Reasons" variant="error">
-              <ul className="list-disc list-inside space-y-1">
-                {agent.failureReasons.map((reason: string, index: number) => (
-                  <li key={index} className="text-sm text-red-700">
-                    {reason}
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          )}
-
-          {/* Recommended Actions */}
-          {agent.recommendedActions && agent.recommendedActions.length > 0 && (
-            <Card title="Recommended Actions" variant="warning">
-              <ul className="list-disc list-inside space-y-1">
-                {agent.recommendedActions.map(
-                  (action: string, index: number) => (
-                    <li key={index} className="text-sm text-blue-700">
-                      {action}
-                    </li>
-                  ),
-                )}
-              </ul>
-            </Card>
-          )}
         </div>
       </div>
     </div>
