@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Typography } from "@/components/ui/typography";
 import { InstructionStatus } from "@/components/instruction-status";
 import { Card } from "@/components/ui/card";
+import { BasicInformation } from "@/components/BasicInformation";
 import type { Agent, AgentInstruction } from "@/types/agent";
 
 export const Route = createFileRoute({
@@ -109,40 +110,7 @@ function AgentDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Basic Information */}
         <div className="space-y-6">
-          <Card title="Basic Information">
-            <dl className="space-y-3">
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Agent ID</dt>
-                <dd className="text-sm font-mono">{agent.agentId}</dd>
-              </div>
-              {agent.description && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    Description
-                  </dt>
-                  <dd className="text-sm">{agent.description}</dd>
-                </div>
-              )}
-              {agent.foundationModel && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    Foundation Model
-                  </dt>
-                  <dd className="text-sm font-mono">{agent.foundationModel}</dd>
-                </div>
-              )}
-              {agent.idleSessionTTLInSeconds && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    Idle Session Timeout
-                  </dt>
-                  <dd className="text-sm">
-                    {agent.idleSessionTTLInSeconds} seconds
-                  </dd>
-                </div>
-              )}
-            </dl>
-          </Card>
+          <BasicInformation agent={agent} />
 
           {/* Technical Details */}
           <Card title="Technical Details">
