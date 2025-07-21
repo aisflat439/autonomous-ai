@@ -3,6 +3,10 @@ import { Typography } from "@/components/ui/typography";
 import { InstructionStatus } from "@/components/instruction-status";
 import { Card } from "@/components/ui/card";
 import { BasicInformation } from "@/components/BasicInformation";
+import { TechnicalDetails } from "@/components/TechnicalDetails";
+import { Timestamps } from "@/components/Timestamps";
+import { MemoryConfiguration } from "@/components/MemoryConfiguration";
+import { GuardrailConfiguration } from "@/components/GuardrailConfiguration";
 import type { Agent, AgentInstruction } from "@/types/agent";
 
 export const Route = createFileRoute({
@@ -113,60 +117,10 @@ function AgentDetailPage() {
           <BasicInformation agent={agent} />
 
           {/* Technical Details */}
-          <Card title="Technical Details">
-            <dl className="space-y-3">
-              <div>
-                <dt className="text-sm font-medium text-gray-500">ARN</dt>
-                <dd className="text-sm font-mono break-all">
-                  {agent.agentArn}
-                </dd>
-              </div>
-              {agent.agentResourceRoleArn && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    Resource Role ARN
-                  </dt>
-                  <dd className="text-sm font-mono break-all">
-                    {agent.agentResourceRoleArn}
-                  </dd>
-                </div>
-              )}
-            </dl>
-          </Card>
+          <TechnicalDetails agent={agent} />
 
           {/* Timestamps */}
-          <Card title="Timestamps">
-            <dl className="space-y-3">
-              {agent.createdAt && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Created</dt>
-                  <dd className="text-sm">
-                    {new Date(agent.createdAt).toLocaleString()}
-                  </dd>
-                </div>
-              )}
-              {agent.updatedAt && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    Last Updated
-                  </dt>
-                  <dd className="text-sm">
-                    {new Date(agent.updatedAt).toLocaleString()}
-                  </dd>
-                </div>
-              )}
-              {agent.preparedAt && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    Prepared
-                  </dt>
-                  <dd className="text-sm">
-                    {new Date(agent.preparedAt).toLocaleString()}
-                  </dd>
-                </div>
-              )}
-            </dl>
-          </Card>
+          <Timestamps agent={agent} />
         </div>
 
         {/* Right Column */}
@@ -196,62 +150,10 @@ function AgentDetailPage() {
           </section>
 
           {/* Memory Configuration */}
-          {agent.memoryConfiguration && (
-            <Card title="Memory Configuration">
-              <dl className="space-y-3">
-                {agent.memoryConfiguration.enabledMemoryTypes && (
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">
-                      Enabled Memory Types
-                    </dt>
-                    <dd className="text-sm">
-                      {agent.memoryConfiguration.enabledMemoryTypes.join(
-                        ", ",
-                      ) || "None"}
-                    </dd>
-                  </div>
-                )}
-                {agent.memoryConfiguration.storageDays && (
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">
-                      Storage Days
-                    </dt>
-                    <dd className="text-sm">
-                      {agent.memoryConfiguration.storageDays} days
-                    </dd>
-                  </div>
-                )}
-              </dl>
-            </Card>
-          )}
+          <MemoryConfiguration agent={agent} />
 
           {/* Guardrail Configuration */}
-          {agent.guardrailConfiguration && (
-            <Card title="Guardrail Configuration">
-              <dl className="space-y-3">
-                {agent.guardrailConfiguration.guardrailIdentifier && (
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">
-                      Guardrail ID
-                    </dt>
-                    <dd className="text-sm font-mono">
-                      {agent.guardrailConfiguration.guardrailIdentifier}
-                    </dd>
-                  </div>
-                )}
-                {agent.guardrailConfiguration.guardrailVersion && (
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">
-                      Guardrail Version
-                    </dt>
-                    <dd className="text-sm">
-                      {agent.guardrailConfiguration.guardrailVersion}
-                    </dd>
-                  </div>
-                )}
-              </dl>
-            </Card>
-          )}
+          <GuardrailConfiguration agent={agent} />
 
           {/* Failure Information */}
           {agent.failureReasons && agent.failureReasons.length > 0 && (
