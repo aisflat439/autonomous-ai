@@ -74,3 +74,71 @@ export const AgentIdParamSchema = z.object({
       example: "ABCDEFGHIJ",
     }),
 });
+
+export const AgentInstructionSchema = z.object({
+  agentId: z.string().openapi({ example: "ABCDEFGHIJ" }),
+  version: z.string().openapi({ example: "1.0" }),
+  instruction: z
+    .string()
+    .openapi({ example: "You are a helpful assistant..." }),
+  isActive: z.boolean().openapi({ example: true }),
+  changeNote: z
+    .string()
+    .optional()
+    .openapi({ example: "Updated response format" }),
+  updatedBy: z.string().openapi({ example: "taytay1989" }),
+  createdAt: z
+    .string()
+    .datetime()
+    .openapi({ example: "2024-01-01T00:00:00.000Z" }),
+  updatedAt: z
+    .string()
+    .datetime()
+    .openapi({ example: "2024-01-01T00:00:00.000Z" }),
+});
+
+export const CreateInstructionSchema = z.object({
+  instruction: z.string().min(1).max(10000).openapi({
+    example: "You are a customer support agent. Always be helpful and polite.",
+    description: "The instruction text for the agent",
+  }),
+  version: z.string().optional().openapi({
+    example: "2.0",
+    description:
+      "Optional version number. If not provided, auto-increments by 0.1",
+  }),
+  changeNote: z.string().optional().openapi({
+    example: "Added more detailed response guidelines",
+    description: "Optional note describing the changes",
+  }),
+});
+
+export const InstructionHistoryQuerySchema = z.object({
+  order: z
+    .enum(["asc", "desc"])
+    .optional()
+    .default("desc")
+    .openapi({ example: "desc" }),
+  limit: z
+    .number()
+    .min(1)
+    .max(100)
+    .optional()
+    .default(20)
+    .openapi({ example: 20 }),
+  sortBy: z
+    .enum(["version", "createdAt"])
+    .optional()
+    .default("createdAt")
+    .openapi({ example: "createdAt" }),
+});
+
+export const VersionParamSchema = z.object({
+  version: z.string().openapi({
+    param: {
+      name: "version",
+      in: "path",
+    },
+    example: "1.0",
+  }),
+});

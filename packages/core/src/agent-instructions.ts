@@ -137,11 +137,19 @@ export async function createInstruction(data: {
       .go();
   }
 
-  return await AgentInstruction.create({
+  const result = await AgentInstruction.create({
     ...data,
     version: padVersion(version),
     isActive: true,
   }).go();
+
+  return {
+    ...result,
+    data: {
+      ...result.data,
+      version: unpadVersion(result.data.version),
+    },
+  };
 }
 
 export async function getActiveInstruction(agentId: string) {

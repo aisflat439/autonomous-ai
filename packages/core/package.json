@@ -10,6 +10,7 @@
     "./new-customers": "./src/new-customers.ts",
     "./dynamo": "./src/dynamo.ts",
     "./tickets": "./src/tickets.ts",
+    "./agent-instructions": "./src/agent-instructions.ts",
     "./example": "./src/example/index.ts"
   },
   "dependencies": {
