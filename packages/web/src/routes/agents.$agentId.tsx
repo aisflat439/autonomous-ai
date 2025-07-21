@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Typography } from "@/components/ui/typography";
+import { InstructionStatus } from "@/components/instruction-status";
 
 interface DetailedAgent {
   agentId: string;
@@ -36,27 +37,57 @@ interface DetailedAgent {
   };
 }
 
+interface AgentInstruction {
+  agentId: string;
+  version: number;
+  instruction: string;
+  isActive: boolean;
+  updatedBy: string;
+  changeNote?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const Route = createFileRoute({
   loader: async ({ params }) => {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}agents/${params.agentId}`,
-      {
+    // Fetch agent details and instruction in parallel
+    const [agentResponse, instructionResponse] = await Promise.all([
+      fetch(`${import.meta.env.VITE_API_URL}agents/${params.agentId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
-      },
-    );
+      }),
+      fetch(
+        `${import.meta.env.VITE_API_URL}agents/${params.agentId}/instructions`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      ).catch(() => null), // Don't fail if instruction fetch fails
+    ]);
 
-    if (!response.ok) {
-      if (response.status === 404) {
+    if (!agentResponse.ok) {
+      if (agentResponse.status === 404) {
         throw new Error("Agent not found");
       }
       throw new Error("Failed to fetch agent details");
     }
 
-    const data = await response.json();
-    return { agent: data.agent as DetailedAgent };
+    const agentData = await agentResponse.json();
+
+    let instructionData = null;
+    if (instructionResponse && instructionResponse.ok) {
+      const data = await instructionResponse.json();
+      instructionData = data.instruction as AgentInstruction;
+    }
+
+    return {
+      agent: agentData.agent as DetailedAgent,
+      customInstruction: instructionData,
+    };
   },
   component: AgentDetailPage,
   errorComponent: ({ error }) => (
@@ -77,7 +108,7 @@ export const Route = createFileRoute({
 });
 
 function AgentDetailPage() {
-  const { agent } = Route.useLoaderData();
+  const { agent, customInstruction } = Route.useLoaderData();
 
   return (
     <div>
@@ -220,14 +251,28 @@ function AgentDetailPage() {
         {/* Right Column */}
         <div className="space-y-6">
           {/* Instruction */}
-          {agent.instruction && (
-            <section className="border rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Instruction</h2>
-              <pre className="text-sm whitespace-pre-wrap font-mono bg-gray-50 p-4 rounded">
-                {agent.instruction}
-              </pre>
-            </section>
-          )}
+          <section className="border rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Instruction</h2>
+              <InstructionStatus customInstruction={customInstruction} />
+            </div>
+            <pre className="text-sm whitespace-pre-wrap font-mono bg-gray-50 p-4 rounded">
+              {customInstruction?.instruction ||
+                agent.instruction ||
+                "No instruction set"}
+            </pre>
+            {customInstruction && (
+              <div className="mt-3 text-xs text-gray-500">
+                <p>
+                  Version {customInstruction.version} • Updated by{" "}
+                  {customInstruction.updatedBy}
+                </p>
+                {customInstruction.changeNote && (
+                  <p className="mt-1">Note: {customInstruction.changeNote}</p>
+                )}
+              </div>
+            )}
+          </section>
 
           {/* Memory Configuration */}
           {agent.memoryConfiguration && (
@@ -300,7 +345,7 @@ function AgentDetailPage() {
                 Failure Reasons
               </h2>
               <ul className="list-disc list-inside space-y-1">
-                {agent.failureReasons.map((reason, index) => (
+                {agent.failureReasons.map((reason: string, index: number) => (
                   <li key={index} className="text-sm text-red-700">
                     {reason}
                   </li>
@@ -316,11 +361,13 @@ function AgentDetailPage() {
                 Recommended Actions
               </h2>
               <ul className="list-disc list-inside space-y-1">
-                {agent.recommendedActions.map((action, index) => (
-                  <li key={index} className="text-sm text-blue-700">
-                    {action}
-                  </li>
-                ))}
+                {agent.recommendedActions.map(
+                  (action: string, index: number) => (
+                    <li key={index} className="text-sm text-blue-700">
+                      {action}
+                    </li>
+                  ),
+                )}
               </ul>
             </section>
           )}
