@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Typography } from "@/components/ui/typography";
 import { InstructionStatus } from "@/components/instruction-status";
+import { Card } from "@/components/ui/card";
 
 interface DetailedAgent {
   agentId: string;
@@ -153,8 +154,7 @@ function AgentDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Basic Information */}
         <div className="space-y-6">
-          <section className="border rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
+          <Card title="Basic Information">
             <dl className="space-y-3">
               <div>
                 <dt className="text-sm font-medium text-gray-500">Agent ID</dt>
@@ -187,11 +187,10 @@ function AgentDetailPage() {
                 </div>
               )}
             </dl>
-          </section>
+          </Card>
 
           {/* Technical Details */}
-          <section className="border rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Technical Details</h2>
+          <Card title="Technical Details">
             <dl className="space-y-3">
               <div>
                 <dt className="text-sm font-medium text-gray-500">ARN</dt>
@@ -210,11 +209,10 @@ function AgentDetailPage() {
                 </div>
               )}
             </dl>
-          </section>
+          </Card>
 
           {/* Timestamps */}
-          <section className="border rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Timestamps</h2>
+          <Card title="Timestamps">
             <dl className="space-y-3">
               {agent.createdAt && (
                 <div>
@@ -245,7 +243,7 @@ function AgentDetailPage() {
                 </div>
               )}
             </dl>
-          </section>
+          </Card>
         </div>
 
         {/* Right Column */}
@@ -276,10 +274,7 @@ function AgentDetailPage() {
 
           {/* Memory Configuration */}
           {agent.memoryConfiguration && (
-            <section className="border rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">
-                Memory Configuration
-              </h2>
+            <Card title="Memory Configuration">
               <dl className="space-y-3">
                 {agent.memoryConfiguration.enabledMemoryTypes && (
                   <div>
@@ -304,15 +299,12 @@ function AgentDetailPage() {
                   </div>
                 )}
               </dl>
-            </section>
+            </Card>
           )}
 
           {/* Guardrail Configuration */}
           {agent.guardrailConfiguration && (
-            <section className="border rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">
-                Guardrail Configuration
-              </h2>
+            <Card title="Guardrail Configuration">
               <dl className="space-y-3">
                 {agent.guardrailConfiguration.guardrailIdentifier && (
                   <div>
@@ -335,15 +327,12 @@ function AgentDetailPage() {
                   </div>
                 )}
               </dl>
-            </section>
+            </Card>
           )}
 
           {/* Failure Information */}
           {agent.failureReasons && agent.failureReasons.length > 0 && (
-            <section className="border border-red-200 rounded-lg p-6 bg-red-50">
-              <h2 className="text-xl font-semibold mb-4 text-red-800">
-                Failure Reasons
-              </h2>
+            <Card title="Failure Reasons" variant="error">
               <ul className="list-disc list-inside space-y-1">
                 {agent.failureReasons.map((reason: string, index: number) => (
                   <li key={index} className="text-sm text-red-700">
@@ -351,15 +340,12 @@ function AgentDetailPage() {
                   </li>
                 ))}
               </ul>
-            </section>
+            </Card>
           )}
 
           {/* Recommended Actions */}
           {agent.recommendedActions && agent.recommendedActions.length > 0 && (
-            <section className="border border-blue-200 rounded-lg p-6 bg-blue-50">
-              <h2 className="text-xl font-semibold mb-4 text-blue-800">
-                Recommended Actions
-              </h2>
+            <Card title="Recommended Actions" variant="warning">
               <ul className="list-disc list-inside space-y-1">
                 {agent.recommendedActions.map(
                   (action: string, index: number) => (
@@ -369,7 +355,7 @@ function AgentDetailPage() {
                   ),
                 )}
               </ul>
-            </section>
+            </Card>
           )}
         </div>
       </div>
