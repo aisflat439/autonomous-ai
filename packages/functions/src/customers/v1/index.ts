@@ -7,42 +7,13 @@ import {
   deleteOldCustomer,
   OldCustomerItem,
 } from "@autonomous-ai/core/old-customers";
-
-const OldCustomerItemSchema = z.object({
-  customerId: z.string().openapi({ example: "cust_123" }),
-  name: z.string().openapi({ example: "John Doe" }),
-  email: z.string().email().openapi({ example: "john@example.com" }),
-  createdAt: z
-    .string()
-    .datetime()
-    .openapi({ example: "2024-01-01T00:00:00.000Z" }),
-  updatedAt: z
-    .string()
-    .datetime()
-    .openapi({ example: "2024-01-01T00:00:00.000Z" }),
-});
-
-const CreateOldCustomerItemSchema = z.object({
-  customerId: z.string().openapi({ example: "cust_123" }),
-  name: z.string().openapi({ example: "John Doe" }),
-  email: z.string().email().openapi({ example: "john@example.com" }),
-});
-
-const UpdateOldCustomerItemSchema = z.object({
-  name: z.string().optional().openapi({ example: "John Doe" }),
-  email: z.string().email().optional().openapi({ example: "john@example.com" }),
-});
-
-const ErrorSchema = z.object({
-  error: z.string().openapi({ example: "Customer not found" }),
-});
-
-const CustomerIdParamSchema = z.object({
-  customerId: z.string().openapi({
-    param: { name: "customerId", in: "path" },
-    example: "cust_123",
-  }),
-});
+import {
+  OldCustomerItemSchema,
+  CreateOldCustomerItemSchema,
+  UpdateOldCustomerItemSchema,
+  ErrorSchema,
+  CustomerIdParamSchema,
+} from "../schemas";
 
 const getCustomers = createRoute({
   method: "get",

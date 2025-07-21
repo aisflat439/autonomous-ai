@@ -4,85 +4,12 @@ import {
   ListAgentsCommand,
   GetAgentCommand,
 } from "@aws-sdk/client-bedrock-agent";
-
-// Define the Agent schema for OpenAPI documentation - matching Bedrock's schema
-const AgentSchema = z.object({
-  agentId: z.string().openapi({ example: "ABCDEFGHIJ" }),
-  agentName: z.string().openapi({ example: "production-ticket-agent" }),
-  agentStatus: z
-    .enum([
-      "CREATING",
-      "PREPARING",
-      "PREPARED",
-      "NOT_PREPARED",
-      "DELETING",
-      "FAILED",
-      "VERSIONING",
-      "UPDATING",
-    ])
-    .openapi({ example: "PREPARED" }),
-  description: z
-    .string()
-    .optional()
-    .openapi({ example: "Customer support ticket management agent" }),
-  latestAgentVersion: z.string().optional().openapi({ example: "1" }),
-  updatedAt: z
-    .string()
-    .datetime()
-    .optional()
-    .openapi({ example: "2024-01-01T00:00:00.000Z" }),
-});
-
-const ErrorSchema = z.object({
-  error: z.string().openapi({ example: "Failed to fetch agents" }),
-});
-
-const DetailedAgentSchema = z.object({
-  agentId: z.string().openapi({ example: "ABCDEFGHIJ" }),
-  agentName: z.string().openapi({ example: "production-ticket-agent" }),
-  agentArn: z.string().openapi({
-    example: "arn:aws:bedrock:us-east-1:123456789012:agent/ABCDEFGHIJ",
-  }),
-  agentStatus: z
-    .enum([
-      "CREATING",
-      "PREPARING",
-      "PREPARED",
-      "NOT_PREPARED",
-      "DELETING",
-      "FAILED",
-      "VERSIONING",
-      "UPDATING",
-    ])
-    .openapi({ example: "PREPARED" }),
-  agentVersion: z.string().openapi({ example: "DRAFT" }),
-  agentResourceRoleArn: z.string().optional(),
-  foundationModel: z
-    .string()
-    .optional()
-    .openapi({ example: "anthropic.claude-3-haiku-20240307-v1:0" }),
-  description: z.string().optional(),
-  instruction: z.string().optional(),
-  idleSessionTTLInSeconds: z.number().optional(),
-  createdAt: z.string().datetime().optional(),
-  updatedAt: z.string().datetime().optional(),
-  preparedAt: z.string().datetime().optional(),
-  failureReasons: z.array(z.string()).optional(),
-  recommendedActions: z.array(z.string()).optional(),
-  memoryConfiguration: z
-    .object({
-      enabledMemoryTypes: z.array(z.string()).optional(),
-      storageDays: z.number().optional(),
-    })
-    .optional(),
-  promptOverrideConfiguration: z.any().optional(),
-  guardrailConfiguration: z
-    .object({
-      guardrailIdentifier: z.string().optional(),
-      guardrailVersion: z.string().optional(),
-    })
-    .optional(),
-});
+import {
+  AgentSchema,
+  DetailedAgentSchema,
+  ErrorSchema,
+  AgentIdParamSchema,
+} from "./schemas";
 
 // Define the list agents route
 const listAgents = createRoute({
@@ -118,18 +45,7 @@ const getAgent = createRoute({
   tags: ["agents"],
   summary: "Get a specific agent by ID",
   request: {
-    params: z.object({
-      agentId: z
-        .string()
-        .regex(/^[0-9a-zA-Z]{10}$/)
-        .openapi({
-          param: {
-            name: "agentId",
-            in: "path",
-          },
-          example: "ABCDEFGHIJ",
-        }),
-    }),
+    params: AgentIdParamSchema,
   },
   responses: {
     200: {
