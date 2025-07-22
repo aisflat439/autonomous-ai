@@ -11,6 +11,7 @@ export const useInstructions = ({
   agent: { agentId: string };
 }) => {
   const [instructionData, setInstructionData] = useState(instruction);
+
   const [status, setStatus] = useState("idle");
 
   const handleSave = async () => {
@@ -58,10 +59,18 @@ export const useInstructions = ({
     }));
   };
 
+  const handleClear = () => {
+    setInstructionData({
+      text: "",
+      changeNote: "",
+    });
+  };
+
   return {
     instructionData,
     handleSave,
     handleEdit,
+    handleClear,
     status,
   };
 };

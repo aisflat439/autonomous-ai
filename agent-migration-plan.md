@@ -4,205 +4,279 @@
 
 This document outlines the plan to make agent instructions dynamic and editable at runtime, while keeping agent creation in the infrastructure layer. This is a focused approach that allows updating agent behavior without redeploying infrastructure.
 
-## Current State Analysis
+## Current Implementation Status (Updated)
 
-### Infrastructure Layer (Current)
+### ✅ Completed
 
-- **Agent Creation**: Remains in `infra/bedrock/agents.ts` and `sst.config.ts`
-- **Instructions**: Hardcoded strings in `sst.config.ts`
-- **Updates**: Require full infrastructure deployment
+#### Phase 1: Storage & API
 
-### Application Layer (Current)
+1. **DynamoDB Table** - Fully implemented with ElectroDB
+   - Table: `AgentInstructions` with pk/sk and GSIs
+   - Versioning support with auto-increment
+   - Active instruction tracking
+   - Audit fields (updatedBy, createdAt, updatedAt)
 
-- **Functionality**: Read-only operations (list and get agents)
-- **No Instruction Management**: Cannot modify agent instructions
+2. **API Endpoints** - All implemented
+   - GET `/agents/{agentId}/instructions` - Get active instruction ✅
+   - PUT `/agents/{agentId}/instructions` - Create/update instruction ✅
+   - GET `/agents/{agentId}/instructions/history` - Get version history ✅
+   - POST `/agents/{agentId}/instructions/{version}/activate` - Activate version ✅
 
-## Target State
+3. **Core Data Layer** - Complete
+   - Version management with padding for proper sorting
+   - Active instruction queries via GSI
+   - History retrieval by date or version
 
-### Hybrid Approach
+#### Phase 2: Web Interface (Partial)
 
-- **Agent Creation**: Still managed in infrastructure (no change)
-- **Instruction Management**: Dynamic via application layer
-- **Storage**: DynamoDB table for instructions
-- **Updates**: Real-time instruction updates without deployment
+- Basic display of custom instructions on agent detail page ✅
+- Instruction status component showing custom vs default ✅
 
-## Implementation Plan
+### ❌ Not Started
 
-### Phase 1: Storage & API (Week 1)
+#### Infrastructure Integration (Critical)
 
-1. **Create DynamoDB Table**
-   - [x] Table name: `agent-instructions`
-   - [x] Primary key: `agentId`
-   - [x] Sort key: `version`
-   - [x] Attributes: instruction, updatedAt, updatedBy, isActive
+- Agents still use hardcoded instructions from `sst.config.ts`
+- No Lambda function to fetch from DynamoDB
+- No connection between Bedrock agents and dynamic instructions
 
-2. **Build API Endpoints**
-   - [ ] GET /agents/{agentId}/instructions - Get current instruction
-   - [ ] PUT /agents/{agentId}/instructions - Update instruction
-   - [ ] GET /agents/{agentId}/instructions/history - Get version history
+#### Web UI Editor
 
-3. **Modify Infrastructure**
-   - [ ] Update agent creation to reference dynamic instructions
-   - [ ] Add Lambda function to fetch instructions from DynamoDB
-   - [ ] Configure Bedrock to use dynamic instruction source
+- No instruction editing capability
+- No markdown editor or preview
+- No version history UI
+- No rollback functionality
 
-### Phase 2: Web Interface (Week 2)
+#### Other Gaps
 
-1. **Create Instruction Editor**
-   - [ ] Add instruction editing to agent detail page
-   - [ ] Implement markdown editor with preview
-   - [ ] Add syntax highlighting for variables/placeholders
-   - [ ] Include save and version history
+- Authentication hardcoded to "taytay1989"
+- No permission system
+- No migration of existing instructions
+- No validation or safety features
 
-2. **Add Safety Features**
-   - [ ] Instruction validation before save
-   - [ ] Preview changes before applying
-   - [ ] Rollback to previous versions
-   - [ ] Change tracking and audit log
+## Updated Implementation Plan
 
-### Phase 3: Integration & Testing (Week 3)
+### Priority 1: Infrastructure Integration (Critical Path)
 
-1. **Connect Infrastructure to Dynamic Instructions**
-   - [ ] Update agent creation to pull from DynamoDB
-   - [ ] Implement instruction refresh mechanism
-   - [ ] Add fallback to default instructions
-   - [ ] Test instruction updates
+1. **Create Instruction Fetcher Lambda**
+   - [ ] Lambda to fetch active instruction from DynamoDB
+   - [ ] Fallback to hardcoded instruction if not found
+   - [ ] Cache with 5-minute TTL for performance
 
-2. **Migration**
-   - [ ] Import existing instructions to DynamoDB
-   - [ ] Update infrastructure to use dynamic source
-   - [ ] Verify agents work with new system
+2. **Update Agent Creation**
+   - [ ] Modify `createAgent` in `infra/bedrock/agents.ts`
+   - [ ] Use dynamic instruction during agent preparation
+   - [ ] Test with one pilot agent first
 
-## Technical Details
+3. **Migration**
+   - [ ] Script to import existing instructions to DynamoDB
+   - [ ] Set imported instructions as active
+   - [ ] Verify agents work with dynamic instructions
 
-### DynamoDB Schema
+### Priority 2: Web Interface
 
-```typescript
-interface AgentInstruction {
-  agentId: string; // Partition key
-  version: number; // Sort key
-  instruction: string; // The actual instruction text
-  isActive: boolean; // Currently active version
-  createdAt: string; // ISO timestamp
-  updatedAt: string; // ISO timestamp
-  updatedBy: string; // User who made the change
-  changeNote?: string; // Optional description of changes
-}
-```
+1. **Instruction Editor Component**
+   - [ ] Markdown editor (@uiw/react-md-editor recommended)
+   - [ ] Live preview pane
+   - [ ] Version comparison/diff view
+   - [ ] Save with change notes
 
-### API Design
+2. **Update Agent Detail Page**
+   - [ ] Add "Edit Instruction" button
+   - [ ] Modal or inline editor
+   - [ ] Version history with rollback
+   - [ ] Loading states and error handling
 
-```yaml
-/api/agents/{agentId}/instructions:
-  get:
-    summary: Get current active instruction
-    responses:
-      200: Current instruction
-      404: Agent not found
+3. **Safety Features**
+   - [ ] Confirm dialog before saving
+   - [ ] Validation for instruction format
+   - [ ] Auto-save drafts to localStorage
+   - [ ] Show who last updated and when
 
-  put:
-    summary: Update agent instruction
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              instruction: string
-              changeNote: string
-    responses:
-      200: Instruction updated
-      400: Invalid instruction
+### Priority 3: Authentication & Permissions
 
-/api/agents/{agentId}/instructions/history:
-  get:
-    summary: Get instruction version history
-    parameters:
-      - name: limit
-        in: query
-        schema:
-          type: integer
-          default: 10
-    responses:
-      200: List of instruction versions
-```
+1. **Fix Authentication**
+   - [ ] Extract user from auth context
+   - [ ] Replace hardcoded "taytay1989"
+   - [ ] Add to all instruction endpoints
 
-### Infrastructure Integration
+2. **Implement Permissions**
+   - [ ] Define roles (admin, editor, viewer)
+   - [ ] Check permissions in API
+   - [ ] Hide/disable UI based on permissions
+   - [ ] Audit log for compliance
+
+## Technical Implementation Details
+
+### Infrastructure Integration Strategy
+
+1. **Instruction Fetcher Lambda**
 
 ```typescript
-// In agent creation (infra/bedrock/agents.ts)
-const getAgentInstruction = async (agentId: string): Promise<string> => {
-  // Fetch from DynamoDB
-  // Fallback to default if not found
+// packages/functions/src/agent-instruction-fetcher.ts
+import { getActiveInstruction } from "@autonomous-ai/core/agent-instructions";
+
+export const handler = async (event: { agentId: string }) => {
+  try {
+    const instruction = await getActiveInstruction(event.agentId);
+    return instruction?.instruction || getDefaultInstruction(event.agentId);
+  } catch (error) {
+    console.error(`Failed to fetch instruction: ${error}`);
+    return getDefaultInstruction(event.agentId);
+  }
 };
+```
 
-// Modified agent creation
+2. **Updated Agent Creation**
+
+```typescript
+// infra/bedrock/agents.ts
+const instructionFetcher = new sst.aws.Function("InstructionFetcher", {
+  handler: "packages/functions/src/agent-instruction-fetcher.handler",
+  link: [agentInstructions],
+});
+
+// In createAgent function
+const instruction = await instructionFetcher.invoke({
+  agentId: params.name,
+});
+
 const agent = new aws.bedrock.AgentAgent(uniqueLogicalName, {
   agentName: `${$app.stage}-${params.name}`,
-  instruction: $util.output(getAgentInstruction(params.name)),
+  instruction: instruction || params.instruction, // Fallback
   // ... other params
 });
 ```
 
-## Implementation Approach
+### Web UI Architecture
 
-### How It Works
+1. **Editor Component Structure**
 
-1. **Agent Creation**: Infrastructure creates agent with a reference to fetch dynamic instructions
-2. **Instruction Storage**: DynamoDB stores versioned instructions
-3. **Runtime Behavior**: Agent fetches latest active instruction when needed
-4. **Updates**: Web UI allows editing instructions, creating new versions
-5. **Activation**: Mark specific version as active for the agent to use
+```typescript
+// packages/web/src/components/instruction-editor.tsx
+interface InstructionEditorProps {
+  agentId: string;
+  currentInstruction: string;
+  onSave: (instruction: string, changeNote: string) => Promise<void>;
+}
 
-### Key Benefits
+export function InstructionEditor({
+  agentId,
+  currentInstruction,
+  onSave,
+}: InstructionEditorProps) {
+  // Markdown editor with preview
+  // Version history sidebar
+  // Save/cancel actions
+}
+```
 
-- No infrastructure redeploy for instruction changes
-- Version history and rollback capability
-- Audit trail of who changed what and when
-- Test instructions before making them active
-- Simple focused scope - just instructions
+2. **State Management**
 
-## Risks & Mitigation
+```typescript
+// Using React Query for data fetching
+const { data: instruction } = useQuery({
+  queryKey: ["agent-instruction", agentId],
+  queryFn: () => fetchActiveInstruction(agentId),
+});
 
-### Risks
+const updateMutation = useMutation({
+  mutationFn: (data: UpdateInstructionData) => updateInstruction(agentId, data),
+  onSuccess: () => {
+    queryClient.invalidateQueries(["agent-instruction", agentId]);
+  },
+});
+```
 
-1. **Instruction Sync**: Agent might cache old instructions
-2. **Invalid Instructions**: Bad syntax could break agent
-3. **Access Control**: Who can edit instructions?
+## Migration Strategy
 
-### Mitigation Strategies
+### Step 1: Pilot Testing
 
-1. **Cache TTL**: Set appropriate cache expiration
-2. **Validation**: Validate instruction format before saving
-3. **Permissions**: Implement proper IAM/auth checks
-4. **Fallback**: Keep default instruction if DB fails
+1. Choose one agent (ticket-agent) as pilot
+2. Implement fetcher Lambda
+3. Update pilot agent to use dynamic instructions
+4. Monitor for 24-48 hours
 
-## Success Criteria
+### Step 2: Full Migration
 
-- [ ] Instructions editable without infrastructure deployment
-- [ ] Version history maintained in DynamoDB
-- [ ] Web interface for editing instructions
-- [ ] Agents use dynamic instructions successfully
-- [ ] Rollback capability works
+1. Run migration script for all agents
+2. Update all agents to use dynamic instructions
+3. Keep hardcoded as fallback for 1 week
+4. Remove hardcoded after validation
 
-## Timeline
+### Migration Script
 
-- **Week 1**: DynamoDB setup and API endpoints
-- **Week 2**: Web UI for instruction editing
-- **Week 3**: Infrastructure integration and testing
+```typescript
+// scripts/migrate-instructions.ts
+const agents = [
+  { id: "ticket-agent", instruction: ticketAgentInstruction },
+  { id: "customer-agent", instruction: customerAgentInstruction },
+  // ... other agents
+];
 
-## Next Steps
+for (const agent of agents) {
+  await createInstruction({
+    agentId: agent.id,
+    instruction: agent.instruction,
+    updatedBy: "migration-script",
+    changeNote: "Initial migration from hardcoded instructions",
+  });
+}
+```
 
-1. Create DynamoDB table for instructions
-2. Build API endpoints for instruction management
-3. Update infrastructure to use dynamic instructions
-4. Create web UI for editing
-5. Test with existing agents
+## Success Metrics
 
-## Questions to Consider
+- ✅ All API endpoints functional
+- ✅ DynamoDB table with versioning
+- ✅ Basic UI display of instructions
+- [ ] Agents using dynamic instructions
+- [ ] < 100ms latency for instruction fetch
+- [ ] Web editor for instructions
+- [ ] Proper authentication/authorization
+- [ ] 50% reduction in deployments for instruction changes
 
-1. Should we implement instruction templates?
-2. How often should agents refresh instructions?
-3. Do we need approval workflow for changes?
-4. Should we support markdown in instructions?
-5. How to handle instruction variables/placeholders?
+## Immediate Next Steps
+
+1. **This Week**
+   - [ ] Create instruction fetcher Lambda
+   - [ ] Update ticket-agent as pilot
+   - [ ] Test end-to-end flow
+
+2. **Next Week**
+   - [ ] Build instruction editor UI
+   - [ ] Add authentication to API
+   - [ ] Create migration script
+
+3. **Following Week**
+   - [ ] Run full migration
+   - [ ] Remove hardcoded instructions
+   - [ ] Documentation and training
+
+## Risk Assessment
+
+### High Priority Risks
+
+1. **Performance**: Lambda cold starts could impact agent response time
+   - Mitigation: Pre-warm Lambda, implement caching
+
+2. **Data Loss**: Accidental deletion of instructions
+   - Mitigation: Soft deletes, version history, backups
+
+3. **Breaking Changes**: Invalid instructions breaking agents
+   - Mitigation: Validation, testing, gradual rollout
+
+### Medium Priority Risks
+
+1. **User Errors**: Incorrect instruction edits
+   - Mitigation: Preview, confirmation, easy rollback
+
+2. **Permissions**: Unauthorized edits
+   - Mitigation: Role-based access control
+
+## Questions Resolved
+
+1. ~~Should we implement instruction templates?~~ → Yes, in Phase 4
+2. ~~How often should agents refresh instructions?~~ → 5-minute cache TTL
+3. ~~Do we need approval workflow for changes?~~ → Not for MVP, consider later
+4. ~~Should we support markdown in instructions?~~ → Yes, with preview
+5. ~~How to handle instruction variables/placeholders?~~ → Phase 4 feature

@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import type { Agent, AgentInstruction } from "@/types/agent";
+import { Typography } from "./ui/typography";
 
 export const Instructions = ({
   customInstruction,
@@ -14,7 +15,7 @@ export const Instructions = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [instructionText, setInstructionText] = useState(
-    customInstruction?.instruction || agent.instruction || ""
+    customInstruction?.instruction || ""
   );
   const [isSaving, setIsSaving] = useState(false);
   const [changeNote, setChangeNote] = useState("");
@@ -96,6 +97,9 @@ export const Instructions = ({
         <div className="space-y-4">
           <div>
             <Label htmlFor="instruction">Instruction</Label>
+            <Typography color="muted" as="pre">
+              {agent.instruction}
+            </Typography>
             <Textarea
               id="instruction"
               value={instructionText}
@@ -118,10 +122,11 @@ export const Instructions = ({
         </div>
       ) : (
         <>
+          <pre className="text-sm whitespace-pre-wrap font-mono bg-gray-200 p-4 rounded">
+            {agent.instruction}
+          </pre>
           <pre className="text-sm whitespace-pre-wrap font-mono bg-gray-50 p-4 rounded">
-            {customInstruction?.instruction ||
-              agent.instruction ||
-              "No instruction set"}
+            {customInstruction?.instruction || "No instruction set"}
           </pre>
           {customInstruction && (
             <div className="mt-3 text-xs text-gray-500">
