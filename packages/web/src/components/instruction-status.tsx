@@ -1,4 +1,4 @@
-interface InstructionStatusProps {
+export interface InstructionStatusProps {
   customInstruction?: {
     version: number;
     updatedBy: string;
