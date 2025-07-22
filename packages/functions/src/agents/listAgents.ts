@@ -1,4 +1,4 @@
-import { createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z, RouteHandler } from "@hono/zod-openapi";
 import { AgentSchema, ErrorSchema } from "./schemas";
 import {
   BedrockAgentClient,
@@ -32,7 +32,7 @@ export const listAgents = createRoute({
   },
 });
 
-export const listAgentsHandler = async (c) => {
+export const listAgentsHandler: RouteHandler<typeof listAgents> = async (c) => {
   console.log("Fetching agents from Bedrock...");
 
   try {
